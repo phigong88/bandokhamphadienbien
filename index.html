@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bản đồ Khám phá Điện Biên</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#1a4a7a;--pd:#0f2d4e;
+  --red:#dc2626;--blue:#0ea5e9;--gold:#d97706;
+  --sur:#fff;--bg:#f1f5f9;--tx:#0f172a;--tx2:#64748b;--bdr:#e2e8f0;
+  --ok:#059669;--r:12px;--sh:0 2px 16px rgba(0,0,0,.09);--shl:0 8px 32px rgba(0,0,0,.16)
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--tx)}
+
+/* TOAST */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-60px);z-index:9999;background:var(--tx);color:#fff;padding:11px 26px;border-radius:40px;font-size:14px;font-weight:600;pointer-events:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;white-space:nowrap;box-shadow:var(--shl)}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:var(--p);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:16px}
+#loading h2{font-size:20px;font-weight:700}
+#loading p{font-size:13px;opacity:.7}
+.spin{width:40px;height:40px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* MAP */
+#map-wrap{flex:1;position:relative;min-width:0}
+#map{width:100%;height:100%}
+
+/* SEARCH */
+#search-wrap{position:absolute;top:14px;left:14px;z-index:900;width:48px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+#search-wrap.open{width:300px}
+#search-box{display:flex;align-items:center;background:var(--sur);border-radius:40px;box-shadow:var(--sh);overflow:hidden;height:46px}
+#search-ic{width:46px;height:46px;flex-shrink:0;border:none;background:none;cursor:pointer;color:var(--p);font-size:17px;display:flex;align-items:center;justify-content:center}
+#search-inp{flex:1;border:none;outline:none;font-size:14px;color:var(--tx);background:none;padding-right:14px;opacity:0;pointer-events:none;transition:opacity .2s .1s}
+#search-wrap.open #search-inp{opacity:1;pointer-events:auto}
+#search-drop{position:absolute;top:52px;left:0;right:0;background:var(--sur);border-radius:var(--r);box-shadow:var(--shl);display:none;overflow:hidden;max-height:240px;overflow-y:auto}
+.sr-item{padding:11px 16px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;transition:background .15s}
+.sr-item:hover{background:var(--bg)}
+.sr-item:last-child{border:none}
+.sr-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0}
+
+/* SPOTLIGHT */
+#spotlight{position:absolute;top:18px;left:50%;transform:translateX(-50%) scale(.88);z-index:800;width:420px;height:265px;border-radius:18px;overflow:hidden;box-shadow:var(--shl);border:4px solid rgba(255,255,255,.95);display:none;cursor:zoom-in;animation:spi .45s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes spi{to{transform:translateX(-50%) scale(1)}}
+.spot-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.38);color:#fff;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+#spotlight:hover .spot-arrow{opacity:1}
+#sp-prev{left:8px}#sp-next{right:8px}
+#sp-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.sp-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.45);cursor:pointer;transition:background .2s,transform .2s}
+.sp-dot.on{background:#fff;transform:scale(1.3)}
+
+/* MAP TOOLS */
+#mtools{position:absolute;right:14px;bottom:56px;z-index:900;display:flex;flex-direction:column;gap:7px}
+.mtb{width:42px;height:42px;border-radius:11px;border:none;background:var(--sur);box-shadow:var(--sh);cursor:pointer;font-size:16px;color:var(--p);display:flex;align-items:center;justify-content:center;transition:background .15s,transform .12s}
+.mtb:hover{background:var(--bg);transform:scale(1.07)}
+.mtb.on{background:var(--p);color:#fff}
+#btn-north{font-size:20px;font-weight:900;line-height:1}
+
+/* LIGHTBOX */
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9990;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#lb.on{display:flex}
+#lb-wrap{position:relative;display:flex;align-items:center;justify-content:center;max-width:90vw;max-height:76vh;width:100%}
+#lb-media{display:flex;align-items:center;justify-content:center;max-width:86vw;max-height:76vh}
+#lb-media img{max-width:86vw;max-height:76vh;border-radius:12px;object-fit:contain;display:block}
+#lb-media video{max-width:86vw;max-height:76vh;border-radius:12px;display:block;background:#000}
+#lb-x{position:fixed;top:18px;right:22px;color:#fff;font-size:36px;cursor:pointer;opacity:.8;z-index:10;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);border-radius:50%}
+#lb-x:hover{opacity:1;background:rgba(255,255,255,.2)}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:50%;width:50px;height:50px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .2s;z-index:2}
+.lb-nav:hover{background:rgba(255,255,255,.32)}
+#lb-prv{left:0}#lb-nxt{right:0}
+#lb-cnt{color:rgba(255,255,255,.6);font-size:13px;margin-top:10px}
+#lb-thumbs{display:flex;gap:7px;margin-top:10px;max-width:90vw;overflow-x:auto;padding:4px}
+#lb-thumbs .lb-th{width:58px;height:42px;border-radius:7px;cursor:pointer;border:2px solid transparent;opacity:.55;transition:all .2s;flex-shrink:0;overflow:hidden;background:#1e293b;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:18px}
+#lb-thumbs .lb-th img{width:100%;height:100%;object-fit:cover;display:block}
+#lb-thumbs .lb-th.on{border-color:#fff;opacity:1}
+
+/* SIDE PANEL */
+#side{width:460px;flex-shrink:0;display:flex;flex-direction:column;background:var(--sur);box-shadow:-4px 0 24px rgba(0,0,0,.07);z-index:10}
+
+/* TOP TABS — icon only */
+#ttabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.ttab{flex:1;height:52px;border:none;background:none;cursor:pointer;font-size:22px;color:var(--tx2);border-bottom:3px solid transparent;transition:color .2s,border-color .2s,background .2s;display:flex;align-items:center;justify-content:center}
+.ttab:hover{background:var(--bg);color:var(--p)}
+.ttab.on{color:var(--p);border-bottom-color:var(--p)}
+
+/* PANEL */
+.panel{flex:1;overflow-y:auto;display:none;min-height:0}
+.panel.on{display:block}
+#p-adm.on{display:flex;flex-direction:column}
+
+/* ══ EXPLORE PANEL ══════════════════════════════ */
+#p-exp{padding:0}
+
+/* INTRO SCREEN */
+#intro{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:360px;padding:40px 28px;text-align:center;color:var(--tx2);animation:fadeUp .3s ease}
+#intro .ico{font-size:64px;color:var(--bdr);margin-bottom:20px}
+#intro .app-name{font-size:10px;font-weight:800;letter-spacing:2.5px;color:var(--p);text-transform:uppercase;margin-bottom:12px;opacity:.7}
+#intro h3{font-size:18px;font-weight:800;color:var(--tx);margin-bottom:10px;line-height:1.35}
+#intro p{font-size:13px;line-height:1.75;color:var(--tx2)}
+#intro .legend{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 12px;border-radius:20px;background:var(--bg);color:var(--tx2)}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* BREADCRUMB */
+#breadcrumb{display:none;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);flex-shrink:0;align-items:center;gap:6px;flex-wrap:wrap}
+#breadcrumb.show{display:flex}
+.bc-item{font-size:12px;color:var(--tx2);cursor:pointer;display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;transition:background .15s}
+.bc-item:hover{background:var(--bdr)}
+.bc-item.active{color:var(--p);font-weight:700;cursor:default}
+.bc-item:not(.active):not(:last-child)::after{content:'›';margin-left:6px;color:var(--bdr);font-size:14px}
+.bc-sep{color:var(--bdr);font-size:14px}
+
+/* LEVEL 1 — KHU VỰC panel */
+#lv1{display:none;padding:20px 16px;animation:fadeUp .3s ease}
+#lv1.show{display:block}
+.lv1-title{font-size:18px;font-weight:800;color:var(--tx);margin-bottom:4px}
+.lv1-sub{font-size:12px;color:var(--tx2);margin-bottom:16px}
+.cat-cards{display:flex;flex-direction:column;gap:10px}
+.cat-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:2px solid var(--bdr);cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;background:var(--sur)}
+.cat-card:hover{transform:translateX(4px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.cat-card.history:hover{border-color:var(--red)}
+.cat-card.culture:hover{border-color:var(--blue)}
+.cat-card.scenery:hover{border-color:var(--gold)}
+.cat-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.cat-icon.history{background:#fef2f2;color:var(--red)}
+.cat-icon.culture{background:#eff6ff;color:var(--blue)}
+.cat-icon.scenery{background:#fffbeb;color:var(--gold)}
+.cat-info{flex:1}
+.cat-name{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:3px}
+.cat-count{font-size:12px;color:var(--tx2)}
+.cat-arrow{color:var(--bdr);font-size:16px}
+
+/* LEVEL 2 — DANH SÁCH MỤC */
+#lv2{display:none;padding:16px;animation:fadeUp .3s ease}
+#lv2.show{display:block}
+.lv2-header{margin-bottom:14px}
+.lv2-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.8px;padding:4px 12px;border-radius:20px;text-transform:uppercase;margin-bottom:8px}
+.lv2-badge.history{background:#fef2f2;color:var(--red)}
+.lv2-badge.culture{background:#eff6ff;color:var(--blue)}
+.lv2-badge.scenery{background:#fffbeb;color:var(--gold)}
+.lv2-title{font-size:15px;font-weight:700;color:var(--tx2)}
+.item-list{display:flex;flex-direction:column;gap:8px}
+.item-card{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:12px;border:1.5px solid var(--bdr);cursor:pointer;transition:border-color .2s,background .15s,transform .12s;background:var(--sur)}
+.item-card:hover{background:#f8fafc;transform:translateX(3px)}
+.item-card.history:hover{border-color:var(--red)}
+.item-card.culture:hover{border-color:var(--blue)}
+.item-card.scenery:hover{border-color:var(--gold)}
+.item-thumb{width:56px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg)}
+.item-thumb-ph{width:56px;height:42px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--bdr);font-size:18px;flex-shrink:0}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:14px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-desc{font-size:11px;color:var(--tx2);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.item-arrow{color:var(--bdr);font-size:14px;flex-shrink:0}
+
+/* LEVEL 3 — DETAIL + QUIZ */
+#lv3{display:none;animation:fadeUp .3s ease}
+#lv3.show{display:block}
+#info-hd{padding:20px 20px 0}
+.cbadge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:1.2px;padding:3px 10px;border-radius:20px;margin-bottom:8px;text-transform:uppercase}
+.cb-h{background:#fef2f2;color:var(--red)}
+.cb-c{background:#eff6ff;color:var(--blue)}
+.cb-s{background:#fffbeb;color:#b45309}
+#v-name{font-size:20px;font-weight:800;color:var(--tx);line-height:1.25;margin-bottom:14px}
+#gstrip{display:flex;gap:6px;padding:10px 20px;background:#f8fafc;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);overflow-x:auto}
+#gstrip:empty{display:none;padding:0}
+.gthumb{width:72px;height:52px;flex-shrink:0;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .2s,transform .15s}
+.gthumb:hover{border-color:var(--p);transform:scale(1.05)}
+.gthumb img,.gthumb>div{width:100%;height:100%;object-fit:cover}
+#info-body{padding:16px 20px}
+#v-desc{font-size:14px;line-height:1.85;color:var(--tx);margin-bottom:16px}
+.qcard{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fcd34d;border-radius:var(--r);padding:16px}
+.qlabel{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#92400e;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+#v-q{font-size:15px;font-weight:700;color:var(--tx);line-height:1.5;margin-bottom:12px}
+.abtn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 13px;margin-bottom:7px;border-radius:10px;background:var(--sur);border:1.5px solid var(--bdr);cursor:pointer;font-size:13px;font-weight:500;text-align:left;color:var(--tx);transition:border-color .15s,background .15s}
+.abtn:hover:not(:disabled){border-color:var(--p);background:#f0f7ff}
+.aletter{width:26px;height:26px;border-radius:7px;background:var(--bg);font-weight:700;font-size:12px;color:var(--tx2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,color .2s}
+.abtn.ok{border-color:var(--ok);background:#ecfdf5}
+.abtn.ok .aletter{background:var(--ok);color:#fff}
+.abtn.ng{border-color:var(--red);background:#fef2f2}
+.abtn.ng .aletter{background:var(--red);color:#fff}
+.exbox{margin-top:12px;padding:13px;border-radius:10px;background:#f0fdf4;border-left:4px solid var(--ok);display:none}
+.exbox p{font-size:13px;line-height:1.75;color:#14532d}
+#pqgal{margin-top:16px;display:none;animation:fadeUp .3s ease}
+.pqtitle{font-size:10px;font-weight:800;letter-spacing:1.2px;color:var(--tx2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.pqgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.pqitem{border-radius:9px;overflow:hidden;cursor:pointer;aspect-ratio:4/3;position:relative}
+.pqitem img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.pqitem:hover img{transform:scale(1.06)}
+.pqov{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;opacity:0;transition:all .2s}
+.pqitem:hover .pqov{background:rgba(0,0,0,.3);opacity:1}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ ADMIN PANEL ════════════════════════════════ */
+#p-adm{padding:0}
+.ghbar{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#0f172a;cursor:pointer;font-size:12px;color:#94a3b8;flex-shrink:0}
+.ghbar-l{display:flex;align-items:center;gap:7px}
+.ghdot{width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0}
+.ghdot.ok{background:#22c55e}.ghdot.sync{background:#3b82f6;animation:pu 1s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.4}}
+.ghpnl{background:#0f172a;padding:0 14px 12px;display:none;flex-shrink:0;border-bottom:1px solid #1e293b}
+.ghpnl.on{display:block}
+.ghpnl input{width:100%;padding:7px 9px;border-radius:7px;border:1px solid #1e293b;background:#1e293b;color:#e2e8f0;font-size:12px;margin-bottom:5px}
+.ghpnl input::placeholder{color:#475569}
+.ghrow{display:flex;gap:5px;margin-top:5px}
+.ghbtn{flex:1;padding:7px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:700}
+.ghbg{background:#166534;color:#86efac}.ghbb{background:#1e3a5f;color:#93c5fd}.ghbp{background:#3b1f6e;color:#c4b5fd}
+.ghlog{font-size:11px;color:#475569;padding:5px 0 0;min-height:14px;word-break:break-word}
+
+/* Admin sub-tabs */
+#atabs{display:flex;border-bottom:1px solid var(--bdr);padding:0 14px;gap:4px;flex-shrink:0}
+.atab{flex:1;padding:12px 8px 10px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--tx2);border-bottom:3px solid transparent;transition:color .2s,border-color .2s;display:flex;align-items:center;justify-content:center;gap:5px;text-transform:uppercase;letter-spacing:.4px}
+.atab.on{color:var(--p);border-bottom-color:var(--p)}
+.abadge{background:var(--p);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px}
+
+/* List panel */
+#alist{flex:1;overflow-y:auto;padding:14px;display:none}
+#alist.on{display:block}
+.admsearch{display:flex;align-items:center;gap:7px;background:var(--bg);border-radius:9px;padding:8px 12px;margin-bottom:11px}
+.admsearch input{flex:1;border:none;background:none;outline:none;font-size:13px}
+.locitem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;border:1.5px solid var(--bdr);margin-bottom:7px;background:var(--sur);transition:border-color .15s}
+.locitem:hover{border-color:var(--p)}
+.lcdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.lc-h{background:var(--red)}.lc-c{background:var(--blue)}.lc-s{background:var(--gold)}
+.lcinfo{flex:1;min-width:0}
+.lcname{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcmeta{font-size:11px;color:var(--tx2);margin-top:2px}
+.lcact{display:flex;gap:5px}
+.iabtn{padding:5px 11px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:700}
+.ia-e{background:#eff6ff;color:var(--blue)}.ia-d{background:#fef2f2;color:var(--red)}
+.listempty{text-align:center;padding:44px 20px;color:var(--tx2)}
+.listempty i{font-size:38px;color:var(--bdr);display:block;margin-bottom:10px}
+
+/* Form panel */
+#aform{flex:1;overflow-y:auto;padding:14px;display:none}
+#aform.on{display:block}
+.ftitle{font-size:14px;font-weight:800;color:var(--p);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.fg{margin-bottom:11px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg textarea,.fg select{width:100%;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:9px;font-size:13px;color:var(--tx);background:var(--sur);outline:none;transition:border-color .2s}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--p)}
+.cof{background:#fff8f6 !important;border-color:#fca98b !important;color:#c05621;font-weight:700}
+.rw2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.coord-hint{font-size:11px;color:var(--tx2);margin-top:3px;display:flex;align-items:center;gap:3px}
+
+/* Media manager */
+.mmgr{border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden}
+.mmhd{padding:9px 12px;background:var(--bg);font-size:11px;font-weight:700;color:var(--tx2);display:flex;align-items:center;justify-content:space-between}
+.mmadd{padding:4px 11px;background:var(--p);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700}
+#mlist{padding:7px;display:flex;flex-direction:column;gap:5px}
+.mrow{display:flex;gap:5px;align-items:center;background:var(--bg);border-radius:7px;padding:5px 7px}
+.mrow input{flex:1;border:1px solid var(--bdr);border-radius:6px;padding:5px 7px;font-size:12px;outline:none;background:var(--sur)}
+.mrow select{width:76px;border:1px solid var(--bdr);border-radius:6px;padding:4px 3px;font-size:11px;background:var(--sur);outline:none}
+.mrthumb{width:34px;height:26px;border-radius:5px;object-fit:cover;display:none;flex-shrink:0}
+.mrdel{background:#fee2e2;color:#dc2626;border:none;border-radius:5px;width:26px;height:26px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Section divider */
+.sdiv{margin:14px 0;padding:7px 10px;background:#f8fafc;border-radius:7px;font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:1.2px;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+
+/* Quiz inputs */
+.qinp{background:#fffbeb;padding:12px;border-radius:9px;border:1px solid #fcd34d}
+.ainputs{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.airw{display:flex;align-items:center;gap:7px}
+.altag{width:24px;height:24px;border-radius:6px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alt-ok{background:#d1fae5;color:#065f46}.alt-ng{background:#f1f5f9;color:var(--tx2)}
+.airw input{flex:1;padding:7px 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;outline:none}
+.airw:first-child input{border-color:#86efac;background:#f0fdf4}
+
+/* Buttons */
+.btnp{width:100%;padding:12px;background:var(--p);color:#fff;border:none;border-radius:11px;cursor:pointer;font-size:14px;font-weight:700;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:4px}
+.btnp:hover{background:var(--pd)}
+.btng{width:100%;padding:9px;background:none;color:var(--red);border:1.5px dashed #fca5a5;border-radius:11px;cursor:pointer;font-size:13px;font-weight:600;margin-top:7px;transition:background .2s}
+.btng:hover{background:#fef2f2}
+
+/* PIN */
+.area-pin{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:-2px 2px 8px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.9);cursor:pointer}
+.pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid rgba(255,255,255,.9);box-shadow:-2px 2px 5px rgba(0,0,0,.28)}
+.leaflet-tooltip{background:rgba(15,23,42,.88)!important;border:none!important;border-radius:8px!important;color:#fff!important;font-size:12px!important;font-weight:600!important;padding:4px 10px!important;box-shadow:0 3px 10px rgba(0,0,0,.2)!important}
+.leaflet-tooltip::before{border-right-color:rgba(15,23,42,.88)!important;border-left-color:rgba(15,23,42,.88)!important}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spin"></div>
+  <h2>Bản đồ Khám phá Điện Biên</h2>
+  <p id="ldmsg">Đang tải dữ liệu...</p>
+</div>
+
+<div id="toast"></div>
+
+<!-- LIGHTBOX -->
+<div id="lb">
+  <span id="lb-x" onclick="lbClose()">×</span>
+  <div id="lb-wrap">
+    <button class="lb-nav" id="lb-prv" onclick="lbNav(-1)"><i class="fa fa-chevron-left"></i></button>
+    <div id="lb-media"></div>
+    <button class="lb-nav" id="lb-nxt" onclick="lbNav(1)"><i class="fa fa-chevron-right"></i></button>
+  </div>
+  <div id="lb-cnt"></div>
+  <div id="lb-thumbs"></div>
+</div>
+
+<!-- MAP -->
+<div id="map-wrap">
+  <div id="search-wrap">
+    <div id="search-box">
+      <button id="search-ic" onclick="toggleSearch()"><i class="fa fa-magnifying-glass"></i></button>
+      <input id="search-inp" type="text" placeholder="Tìm khu vực, địa danh..." oninput="liveSearch(this.value)" onkeydown="if(event.key==='Escape')toggleSearch()">
+    </div>
+    <div id="search-drop"></div>
+  </div>
+
+  <div id="spotlight" onclick="lbOpenFromSpot()">
+    <button class="spot-arrow" id="sp-prev" onclick="event.stopPropagation();spNav(-1)"><i class="fa fa-chevron-left"></i></button>
+    <div id="sp-media"></div>
+    <button class="spot-arrow" id="sp-next" onclick="event.stopPropagation();spNav(1)"><i class="fa fa-chevron-right"></i></button>
+    <div id="sp-dots"></div>
+    <div style="position:absolute;top:9px;right:9px;background:rgba(0,0,0,.45);color:#fff;border-radius:7px;padding:4px 9px;font-size:11px;font-weight:600;pointer-events:none;display:flex;align-items:center;gap:4px"><i class="fa fa-expand"></i>Phóng to</div>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="mtools">
+    <button class="mtb" id="btn-layer" onclick="toggleLayer()" title="Đổi lớp bản đồ"><i class="fa fa-satellite"></i></button>
+    <button class="mtb" id="btn-north" onclick="resetNorth()" title="Về hướng Bắc">↑</button>
+    <button class="mtb" onclick="goHome()" title="Về trung tâm"><i class="fa fa-house"></i></button>
+    <button class="mtb" onclick="map.zoomIn()"><i class="fa fa-plus"></i></button>
+    <button class="mtb" onclick="map.zoomOut()"><i class="fa fa-minus"></i></button>
+  </div>
+</div>
+
+<!-- SIDE -->
+<div id="side">
+  <div id="ttabs">
+    <button class="ttab on" id="tt-exp" onclick="switchTab('exp')" title="Khám phá"><i class="fa fa-compass"></i></button>
+    <button class="ttab" id="tt-adm" onclick="switchTab('adm')" title="Quản trị"><i class="fa fa-sliders"></i></button>
+  </div>
+
+  <!-- EXPLORE -->
+  <div class="panel on" id="p-exp">
+    <!-- Breadcrumb -->
+    <div id="breadcrumb">
+      <div class="bc-item" id="bc-home" onclick="navHome()"><i class="fa fa-house" style="font-size:11px"></i> Trang chủ</div>
+    </div>
+
+    <!-- Intro -->
+    <div id="intro">
+      <div class="ico"><i class="fa fa-map-location-dot"></i></div>
+      <div class="app-name">Bản đồ Khám phá Điện Biên</div>
+      <h3>Khám phá Di tích Lịch sử, Di sản Văn hóa &amp; Danh lam Thắng cảnh tỉnh Điện Biên</h3>
+      <p>Tìm kiếm hoặc nhấn vào ghim khu vực trên bản đồ để bắt đầu khám phá</p>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--p)"></div>Khu vực</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Di tích lịch sử</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Di sản văn hóa</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--gold)"></div>Danh lam thắng cảnh</div>
+      </div>
+    </div>
+
+    <!-- Level 1: Khu vực → 3 danh mục -->
+    <div id="lv1">
+      <div class="lv1-title" id="lv1-name"></div>
+      <div class="lv1-sub" id="lv1-sub"></div>
+      <div class="cat-cards" id="cat-cards"></div>
+    </div>
+
+    <!-- Level 2: Danh sách mục trong danh mục -->
+    <div id="lv2">
+      <div class="lv2-header">
+        <div class="lv2-badge" id="lv2-badge"></div>
+        <div class="lv2-title" id="lv2-title"></div>
+      </div>
+      <div class="item-list" id="item-list"></div>
+    </div>
+
+    <!-- Level 3: Chi tiết + Quiz -->
+    <div id="lv3">
+      <div id="info-hd">
+        <div class="cbadge" id="v-badge"></div>
+        <h2 id="v-name"></h2>
+      </div>
+      <div id="gstrip"></div>
+      <div id="info-body">
+        <p id="v-desc"></p>
+        <div class="qcard">
+          <div class="qlabel"><i class="fa fa-lightbulb"></i>Câu hỏi khám phá</div>
+          <p id="v-q"></p>
+          <div id="v-ans"></div>
+          <div class="exbox" id="v-ex"><p id="v-ex-txt"></p></div>
+        </div>
+        <div id="pqgal">
+          <div class="pqtitle"><i class="fa fa-images"></i>Hình ảnh khám phá thêm</div>
+          <div class="pqgrid" id="pqgrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="panel" id="p-adm">
+    <div class="ghbar" onclick="toggleGh()">
+      <div class="ghbar-l"><div class="ghdot" id="ghdot"></div><span id="ghbarlabel">GitHub — Chưa kết nối</span></div>
+      <i class="fa fa-chevron-down" id="ghchev" style="font-size:11px"></i>
+    </div>
+    <div class="ghpnl" id="ghpnl">
+      <div style="margin-bottom:8px;padding:8px 10px;background:#0c4a6e;border-radius:7px;font-size:11px;color:#7dd3fc;line-height:1.6">
+        <b style="color:#38bdf8">ℹ Cách hoạt động:</b> Sau khi thêm/sửa dữ liệu, nhấn <b>Đẩy lên</b> — mọi người truy cập sẽ thấy ngay, không cần đăng nhập.
+      </div>
+      <input type="text" id="gh-owner" placeholder="Tên tài khoản GitHub" value="phigong88">
+      <input type="text" id="gh-repo" placeholder="Tên repository" value="bandokhamphadienbien">
+      <input type="text" id="gh-file" placeholder="Đường dẫn file" value="data/locations.json">
+      <input type="password" id="gh-token" placeholder="Personal Access Token (chỉ giáo viên cần)">
+      <div class="ghrow">
+        <button class="ghbtn ghbg" onclick="ghConnect()"><i class="fa fa-link"></i> Kết nối</button>
+        <button class="ghbtn ghbb" onclick="ghPush()"><i class="fa fa-cloud-arrow-up"></i> Đẩy lên</button>
+        <button class="ghbtn ghbp" onclick="ghPull()"><i class="fa fa-cloud-arrow-down"></i> Tải về</button>
+      </div>
+      <div class="ghlog" id="ghlog">—</div>
+    </div>
+
+    <div id="atabs">
+      <button class="atab on" id="at-list" onclick="switchAdmTab('list')"><i class="fa fa-list"></i>Danh sách <span class="abadge" id="cnt-badge">0</span></button>
+      <button class="atab" id="at-form" onclick="switchAdmTab('form')"><i class="fa fa-plus"></i>Thêm mới</button>
+    </div>
+
+    <div id="alist" class="on">
+      <div class="admsearch">
+        <i class="fa fa-magnifying-glass" style="color:var(--tx2);font-size:13px"></i>
+        <input type="text" placeholder="Lọc danh sách..." oninput="filterList(this.value)">
+      </div>
+      <div id="list-items"></div>
+    </div>
+
+    <div id="aform">
+      <input type="hidden" id="edit-id" value="-1">
+      <div class="ftitle" id="form-title"><i class="fa fa-plus-circle"></i>Thêm nội dung mới</div>
+
+      <!-- KHU VỰC -->
+      <div class="fg">
+        <label>Khu vực / Địa bàn</label>
+        <select id="in-area">
+          <option value="">-- Chọn khu vực --</option>
+        </select>
+        <div style="margin-top:5px;display:flex;gap:6px;align-items:center">
+          <input type="text" id="in-area-new" placeholder="Hoặc tạo khu vực mới..." style="flex:1">
+          <button onclick="addNewArea()" style="padding:8px 12px;background:var(--p);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap"><i class="fa fa-plus"></i> Tạo</button>
+        </div>
+      </div>
+
+      <!-- LOẠI -->
+      <div class="fg">
+        <label>Phân loại</label>
+        <select id="in-type">
+          <option value="history">🔴 Di tích lịch sử</option>
+          <option value="culture">🔵 Di sản văn hóa</option>
+          <option value="scenery">🟡 Danh lam thắng cảnh</option>
+        </select>
+      </div>
+
+      <div class="fg"><label>Tên nội dung</label><input type="text" id="in-name" placeholder="Vd: Xòe Thái, Lễ hội Hoa Ban, Đồi A1..."></div>
+      <div class="fg"><label>Mô tả ngắn</label><textarea id="in-desc" rows="3" placeholder="Mô tả nội dung, ý nghĩa lịch sử/văn hóa..."></textarea></div>
+
+      <!-- TỌA ĐỘ (không bắt buộc với di sản văn hóa) -->
+      <div style="background:#f8fafc;border-radius:9px;padding:10px 12px;margin-bottom:11px">
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">📍 Tọa độ (không bắt buộc — chỉ khi có địa điểm cụ thể)</div>
+        <div class="rw2">
+          <div class="fg" style="margin:0"><label>Vĩ độ (Lat)</label><input type="text" id="in-lat" class="cof" placeholder="Nhấn bản đồ →"></div>
+          <div class="fg" style="margin:0"><label>Kinh độ (Lng)</label><input type="text" id="in-lng" class="cof" placeholder="để lấy tự động"></div>
+        </div>
+        <div class="coord-hint" style="margin-top:6px"><i class="fa fa-circle-info" style="color:var(--p)"></i>Chuyển tab Quản trị rồi nhấn vào bản đồ để lấy tọa độ</div>
+      </div>
+
+      <!-- MEDIA -->
+      <div class="fg">
+        <label>Hình ảnh / Video <span style="font-weight:400;color:var(--tx2)">(thêm nhiều link)</span></label>
+        <div class="mmgr">
+          <div class="mmhd"><span>Danh sách media</span><button class="mmadd" onclick="addMediaRow()"><i class="fa fa-plus"></i> Thêm link</button></div>
+          <div id="mlist"></div>
+        </div>
+        <div style="margin-top:5px;padding:7px 10px;background:#fffbeb;border-radius:7px;font-size:11px;color:#92400e;line-height:1.6">
+          <i class="fa fa-lightbulb"></i> Dùng link ảnh từ <b>ImgBB</b>, <b>Imgur</b> hoặc YouTube. Ảnh đầu tiên là ảnh đại diện.
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="sdiv"><i class="fa fa-lightbulb"></i>Câu hỏi tương tác</div>
+      <div class="qinp">
+        <div class="fg" style="margin-bottom:8px"><label>Câu hỏi</label><input type="text" id="in-q" placeholder="Nhập câu hỏi trắc nghiệm..."></div>
+        <label style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px">Đáp án (số 1 là ĐÚNG)</label>
+        <div class="ainputs">
+          <div class="airw"><div class="altag alt-ok">✓</div><input type="text" id="in-a1" placeholder="Đáp án đúng"></div>
+          <div class="airw"><div class="altag alt-ng">B</div><input type="text" id="in-a2" placeholder="Đáp án sai 1"></div>
+          <div class="airw"><div class="altag alt-ng">C</div><input type="text" id="in-a3" placeholder="Đáp án sai 2"></div>
+          <div class="airw"><div class="altag alt-ng">D</div><input type="text" id="in-a4" placeholder="Đáp án sai 3"></div>
+        </div>
+        <div class="fg" style="margin-top:8px;margin-bottom:0"><label>Lời giải thích</label><textarea id="in-ex" rows="2" placeholder="Giải thích sau khi trả lời đúng..."></textarea></div>
+      </div>
+
+      <button class="btnp" id="btn-save" onclick="doSave()"><i class="fa fa-floppy-disk"></i>Lưu nội dung</button>
+      <button class="btng" id="btn-cancel" style="display:none" onclick="cancelEdit()">✕ Hủy chỉnh sửa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  MAP
+// ══════════════════════════════════════════
+const map = L.map('map',{zoomControl:false}).setView([21.3891,103.0227],10);
+const lSat    = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+const lStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+lSat.addTo(map);
+let isSat=true, markers=[], mapRotation=0, isDragging=false, startAngle=0;
+
+// Xoay bản đồ bằng Shift+kéo
+document.getElementById('map').addEventListener('mousedown',e=>{
+  if(!e.shiftKey)return; isDragging=true;
+  const r=e.currentTarget.getBoundingClientRect();
+  startAngle=Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI-mapRotation;
+  e.preventDefault();
+});
+document.addEventListener('mousemove',e=>{
+  if(!isDragging)return;
+  const r=document.getElementById('map').getBoundingClientRect();
+  mapRotation=Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI-startAngle;
+  document.getElementById('map').style.transform=`rotate(${mapRotation}deg)`;
+  document.getElementById('btn-north').style.transform=`rotate(${-mapRotation}deg)`;
+});
+document.addEventListener('mouseup',()=>isDragging=false);
+
+// ══════════════════════════════════════════
+//  DATA STRUCTURE
+//  areas: [{id, name, lat, lng, zoom, items:[{type,name,desc,mediaList,lat?,lng?,q,ans,ex,extraMedia}]}]
+// ══════════════════════════════════════════
+const INIT_AREAS = [
+  {
+    id:'dbp', name:'Điện Biên Phủ', lat:21.3891, lng:103.0178, zoom:14,
+    items:[
+      {
+        type:'history', name:'Di tích lịch sử Đồi A1', lat:21.3853, lng:103.0215,
+        desc:'Cứ điểm kiên cố nhất trong tập đoàn cứ điểm Điện Biên Phủ, nơi diễn ra trận đánh ác liệt nhất suốt 39 ngày đêm.',
+        mediaList:[{url:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Hill_A1_Dien_Bien_Phu.jpg/640px-Hill_A1_Dien_Bien_Phu.jpg',type:'image'}],
+        q:'Khối bộc phá được kích nổ tại đồi A1 đêm 6/5/1954 nặng bao nhiêu kg?',
+        ans:['960 kg','500 kg','1.200 kg','750 kg'],
+        ex:'Khối thuốc nổ 960 kg được đặt vào đường hầm đào xuyên lòng đồi, khi phát nổ tạo ra hố phễu rộng hơn 100m² còn lưu dấu đến ngày nay. Đây là hiệu lệnh mở đầu cuộc tổng công kích cuối cùng dẫn đến chiến thắng ngày 7/5/1954.'
+      },
+      {
+        type:'history', name:'Hầm chỉ huy Tập đoàn cứ điểm Điện Biên Phủ', lat:21.3942, lng:103.0178,
+        desc:'Căn hầm kiên cố nhất Đông Dương, nơi đặt Bộ chỉ huy tập đoàn cứ điểm Điện Biên Phủ của quân Pháp.',
+        mediaList:[],
+        q:'Tướng Pháp nào đã ra đầu hàng tại hầm chỉ huy chiều 7/5/1954?',
+        ans:['Tướng Christian de Castries','Tướng Henri Navarre','Tướng Jean de Lattre','Tướng Cogny'],
+        ex:'Chiều 7/5/1954, Tướng Christian de Castries cùng toàn bộ bộ tham mưu ra khỏi hầm giơ tay đầu hàng, chấm dứt 56 ngày đêm chiến đấu lịch sử.'
+      },
+      {
+        type:'culture', name:'Nghệ thuật Xòe Thái',
+        desc:'Múa xòe hay còn gọi là nghệ thuật Xoè Thái là vũ điệu truyền thống đặc trưng của người Thái, gắn chặt với đời sống tâm linh, lao động và tính kết nối cộng đồng. Điện Biên tự hào là một trong những cái nôi lớn sở hữu kho tàng các điệu xòe nguyên bản.',
+        mediaList:[],
+        q:'Nghệ thuật Xòe Thái được UNESCO ghi danh Di sản văn hóa phi vật thể nhân loại vào năm nào?',
+        ans:['Năm 2021','Năm 2019','Năm 2016','Năm 2023'],
+        ex:'Ngày 1/12/2021, tại kỳ họp thứ 16 của Ủy ban Liên Chính phủ UNESCO, Nghệ thuật Xòe Thái chính thức được ghi danh Di sản văn hóa phi vật thể đại diện của nhân loại. Nnhững buổi diễn múa Xòe Thái không thể thiếu trong những đêm giao lưu văn hóa mà bạn sẽ có dịp chiêm ngưỡng khi du lịch Điện Biên.'
+      },
+      {
+        type:'culture', name:'Văn hóa lúa nước Mường Thanh',
+        desc:'Cánh đồng Mường Thanh rộng hơn 5.000 ha — cánh đồng lớn nhất Tây Bắc, gắn liền với nền văn minh lúa nước truyền thống hàng nghìn năm của người Thái.',
+        mediaList:[],
+        q:'Tên gọi "Mường Thanh" ngày nay thực chất được đọc chệch âm từ chữ "Mường Then" trong tiếng Thái cổ, từ này có nghĩa gốc là gì?',
+        ans:['Xứ Trời (vùng đất của thần tiên)','Đất vàng phù sa','Vùng đất bình yên','Thung lũng sông núi'],
+        ex:'"Mường" trong tiếng Thái nghĩa là vùng đất/bản mường; "Thanh" nghĩa là trời. Cánh đồng Mường Thanh rộng hơn 5.000 ha là vựa lúa lớn nhất vùng Tây Bắc.'
+      },
+      {
+        type:'scenery', name:'Tượng đài Chiến thắng Điện Biên Phủ', lat:21.3910, lng:103.0165,
+        desc:'Tượng đài Chiến thắng Điện Biên Phủ là công trình kỳ vĩ khắc họa hình ảnh nhóm nhân vật gồm 3 chiến sĩ bộ đội phối hợp ăn ý và một em bé dân tộc Thái, với lá cờ "Quyết chiến - Quyết thắng" được giương cao lên bầu trời. Tác phẩm là biểu tượng cho ý chí kiên cường, tình đoàn kết quân dân và khát vọng hòa bình của dân tộc.',
+        mediaList:[],
+        q:'Tượng đài Chiến thắng Điện Biên Phủ được đặt trên ngọn đồi nào?',
+        ans:['Đồi D1','Đồi A1','Đồi C1','Đồi Him Lam'],
+        ex:'Tượng đài Chiến thắng Điện Biên Phủ tọa lạc trên đồi D1 lịch sử — trung tâm Phường Điện Biên Phủ, cao khoảng 12,6m và nặng 217 tấn là tượng đồng lớn nhất Việt Nam. Từ vị trí đỉnh đồi cao này, du khách có thể phóng tầm mắt ngắm nhìn bao quát toàn cảnh thành Điện Biên Phủ đổi mới và cánh đồng Mường Thanh huyền thoại.'
+      }
+    ]
+  },
+  {
+    id:'muonglay', name:'Phường Mường Lay', lat:22.0682, lng:103.1524, zoom:13,
+    items:[
+      {
+        type:'scenery', name:'Thung lũng sông nước Mường Lay', lat:22.0700, lng:103.1500,
+        desc:'Nơi giao nhau của ba dòng sông lớn (sông Đà, sông Nậm Na và sông Nậm Lay), sở hữu cảnh quan núi non kỳ vĩ soi bóng xuống mặt nước xanh ngắt quanh năm. Nơi đây được ví như một "vịnh Hạ Long trên núi" và là điểm du lịch sinh thái, sông nước độc đáo bậc nhất của tỉnh Điện Biên.',
+        mediaList:[],
+        q:'Biển hồ nước mênh mông, hữu tình tạo nên danh thắng tại thị xã Mường Lay ngày nay được hình thành từ việc tích nước của công trình thủy điện lớn nào?',
+        ans:['Thủy điện Sơn La','Thủy điện Hòa Bình','Thủy điện Lai Châu','Thủy điện Nà Lơi'],
+        ex:'Thị xã Mường Lay nằm bên lòng hồ thủy điện Sơn La — nhà máy thủy điện lớn nhất Đông Nam Á (khi xây dựng), tạo nên cảnh quan hồ núi thơ mộng.'
+      },
+      {
+        type:'culture', name:'Nghệ thuật Hát Then của người Thái Trắng Mường Lay',
+        desc:'Nghệ thuật Hát Then là di sản văn hóa phi vật thể quốc gia lưu truyền rộng rãi trong cộng đồng đồng bào Thái Trắng. Trong đó, thị xã Mường Lay được coi là một trong những cái nôi lớn bảo tồn nguyên vẹn các điệu Then cổ kết hợp nhạc cụ bản địa. Loại hình diễn xướng nghi lễ đặc sắc này thường xuất hiện trong các hội đầu xuân như lễ Kin Pang Then, lễ cầu mùa hay cầu mưa nhằm gửi gắm ước vọng của con người lên các đấng thần linh.',
+        mediaList:[],
+        q:'Nhạc cụ truyền thống được làm từ nửa quả bầu khô kết hợp cần gỗ, đóng vai trò là "vật báu" không thể thiếu để đệm và dẫn đường cho lời hát của thầy Then là gì?',
+        ans:['Đàn Tính (Tính tẩu)','Khèn bè','Trống đồng','Sáo trúc'],
+        ex:'Đàn Tính (theo tiếng địa phương gọi là Tính tẩu) chính là linh hồn của nghệ thuật hát Then. Thân đàn được chế tác vô cùng đặc biệt với bầu vang làm từ quả bầu già phơi khô, mặt đàn bằng gỗ mỏng và cần đàn bằng gỗ cây dâu long cốt. Đồng bào Thái Trắng ví cây đàn này như một chiếc cầu nối tâm linh hay phương tiện bay, giúp thầy Then truyền gửi lời ca và ước nguyện cầu mưa, cầu mùa của dân bản vượt qua các mường trời để đến với đấng thần linh. Tiếng đàn Tính ngân vang thánh thót, hòa quyện vào lời hát Then thâm trầm tạo nên một không gian văn hóa vừa thiêng liêng, vừa đậm đà bản sắc núi rừng Tây Bắc.'
+      }
+    ]
+  },
+  {
+    id:'muongpha', name:'Xã Mường Phăng', lat:21.4012, lng:103.1105, zoom:13,
+    items:[
+      {
+        type:'history', name:'Sở Chỉ huy Chiến dịch Điện Biên Phủ', lat:21.4012, lng:103.1105,
+        desc:'Nằm ở độ cao trên 1.000m dưới tán rừng cổ thụ, đây là nơi Đại tướng Võ Nguyên Giáp đặt đại bản doanh chỉ huy toàn bộ Chiến dịch Điện Biên Phủ. Chính tại đây, Đại tướng đưa ra quyết định lịch sử thay đổi phương châm tác chiến.',
+        mediaList:[],
+        q:'Đại tướng Võ Nguyên Giáp đã thay đổi phương châm tác chiến thành gì tại Mường Phăng?',
+        ans:['Đánh chắc, tiến chắc','Đánh nhanh, thắng nhanh','Đánh du kích, tiêu hao','Bao vây, cô lập'],
+        ex:'Sau khi nghiên cứu thực địa, Đại tướng quyết định kéo pháo ra, chuyển sang "đánh chắc tiến chắc" — quyết định mà ông gọi là "khó khăn nhất trong cuộc đời". Đây là quyết định then chốt làm thay đổi cục diện chiến dịch.'
+      },
+      {
+        type:'scenery', name:'Hồ Pá Khoang', lat:21.4150, lng:103.0820,
+        desc:'Hồ Pá Khoang - có diện tích mặt nước rộng hơn 600ha, cách trung tâm Điện Biên Phủ khoảng 20km. Nơi đây nổi tiếng với cảnh quan thiên nhiên mây vờn sóng nước, các hòn đảo nhân tạo ngập tràn sắc hoa rực rỡ vào dịp đầu xuân và những bản làng người Thái, Khơ Mú ven hồ vẫn giữ nguyên bản sắc văn hóa gốc.',
+        mediaList:[],
+        q:'Điểm nhấn du lịch lãng mạn, độc đáo bậc nhất thu hút du khách đến với hồ Pá Khoang vào dịp tháng 1 hằng năm là hòn đảo của loài hoa nào?',
+        ans:['Hoa anh đào Nhật Bản','Hoa tam giác mạch','Hoa cải vàng vùng cao','Hoa dã quỳ dại'],
+        ex:'Đảo hoa anh đào nằm giữa lòng hồ Pá Khoang là kết quả của dự án hợp tác, thuần dưỡng thành công hàng nghìn gốc hoa anh đào có nguồn gốc từ Nhật Bản trên đất Điện Biên. Do đặc trưng khí hậu mát mẻ của vùng lòng chảo Mường Phăng, hoa thường bung nở rực rỡ vào giai đoạn cuối đông đầu xuân (tháng 1 hằng năm), tạo nên một biểu tượng giao lưu văn hóa và là điểm nhấn cảnh quan sinh thái đặc sắc thu hút khách du lịch của tỉnh Điện Biên.'
+      }
+    ]
+  }
+];
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let areas = [];
+let curArea = null, curType = null, curItemIdx = null;
+
+function loadLocalAreas() {
+  const keys = ['AREAS_DBP_V5','DB_DBP_V6','DB_DANBIEN_V5'];
+  for(const k of keys){
+    try{
+      const raw=localStorage.getItem(k);
+      if(raw){
+        const p=JSON.parse(raw);
+        if(p && p.length && p[0].items){
+          localStorage.setItem('AREAS_DBP_V5',JSON.stringify(p));
+          return p;
+        }
+      }
+    }catch{}
+  }
+  return null;
+}
+
+areas = loadLocalAreas() || INIT_AREAS;
+let ghCfg = JSON.parse(localStorage.getItem('GH_CFG_V6')) || {owner:'phigong88',repo:'bandokhamphadienbien',file:'data/locations.json',token:'',sha:''};
+
+const GH_OWNER='phigong88', GH_REPO='bandokhamphadienbien', GH_FILE='data/locations.json';
+const RAW_URL=`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE}`;
+
+function localSave(){ localStorage.setItem('AREAS_DBP_V5',JSON.stringify(areas)); }
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+let toastT;
+function toast(msg,color='#0f172a'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=color;
+  t.classList.add('show'); clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ══════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════
+function switchTab(id){
+  ['exp','adm'].forEach(t=>{
+    document.getElementById('tt-'+t).classList.toggle('on',t===id);
+    document.getElementById('p-'+t).classList.toggle('on',t===id);
+  });
+  if(id==='adm'){ renderList(); populateAreaSelect(); }
+  loadMarkers();
+}
+function switchAdmTab(id){
+  ['list','form'].forEach(t=>document.getElementById('at-'+t).classList.toggle('on',t===id));
+  document.getElementById('alist').classList.toggle('on',id==='list');
+  document.getElementById('aform').classList.toggle('on',id==='form');
+  if(id==='list') renderList();
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION (3 levels)
+// ══════════════════════════════════════════
+function navHome(){
+  curArea=null; curType=null; curItemIdx=null;
+  show('intro'); hideBreadcrumb();
+  document.getElementById('spotlight').style.display='none';
+  map.flyTo([21.3891,103.0227],10,{duration:1.2});
+}
+
+function navToArea(areaId){
+  curArea = areas.find(a=>a.id===areaId);
+  if(!curArea) return;
+  curType=null; curItemIdx=null;
+  map.flyTo([curArea.lat,curArea.lng], curArea.zoom||13, {duration:1.3});
+  renderLv1();
+  show('lv1');
+  setBreadcrumb([{label:curArea.name}]);
+}
+
+function navToType(type){
+  if(!curArea) return;
+  curType=type; curItemIdx=null;
+  renderLv2();
+  show('lv2');
+  const labels={history:'Di tích lịch sử',culture:'Di sản văn hóa',scenery:'Danh lam thắng cảnh'};
+  setBreadcrumb([
+    {label:curArea.name, fn:()=>navToArea(curArea.id)},
+    {label:labels[type]}
+  ]);
+}
+
+function navToItem(idx){
+  if(!curArea||!curType) return;
+  const items = curArea.items.filter(i=>i.type===curType);
+  const item = items[idx];
+  if(!item) return;
+  curItemIdx = idx;
+  renderLv3(item);
+  show('lv3');
+  const labels={history:'Di tích lịch sử',culture:'Di sản văn hóa',scenery:'Danh lam thắng cảnh'};
+  setBreadcrumb([
+    {label:curArea.name, fn:()=>navToArea(curArea.id)},
+    {label:labels[curType], fn:()=>navToType(curType)},
+    {label:item.name}
+  ]);
+  if(item.lat && item.lng) map.flyTo([item.lat,item.lng],16,{duration:1});
+}
+
+function show(id){
+  ['intro','lv1','lv2','lv3'].forEach(x=>{
+    const el=document.getElementById(x);
+    el.style.display='none';
+    el.classList.remove('show');
+  });
+  const el=document.getElementById(id);
+  el.style.display='block';
+  setTimeout(()=>el.classList.add('show'),10);
+}
+
+function setBreadcrumb(items){
+  const bc=document.getElementById('breadcrumb');
+  bc.classList.add('show');
+  bc.innerHTML=`<div class="bc-item" onclick="navHome()"><i class="fa fa-house" style="font-size:10px"></i></div>`;
+  items.forEach((item,i)=>{
+    bc.innerHTML+=`<span class="bc-sep">›</span>`;
+    if(item.fn && i<items.length-1){
+      bc.innerHTML+=`<div class="bc-item" onclick="(${item.fn.toString()})()">${item.label}</div>`;
+    } else {
+      bc.innerHTML+=`<div class="bc-item active">${item.label}</div>`;
+    }
+  });
+}
+function hideBreadcrumb(){ document.getElementById('breadcrumb').classList.remove('show'); }
+
+// ══════════════════════════════════════════
+//  RENDER LEVEL 1
+// ══════════════════════════════════════════
+function renderLv1(){
+  if(!curArea) return;
+  document.getElementById('lv1-name').textContent = curArea.name;
+  const items = curArea.items || [];
+  const counts = {
+    history: items.filter(i=>i.type==='history').length,
+    culture: items.filter(i=>i.type==='culture').length,
+    scenery: items.filter(i=>i.type==='scenery').length
+  };
+  const cats = [
+    {type:'history', icon:'fa fa-landmark', label:'Di tích lịch sử', desc:'Các di tích, địa điểm lịch sử cách mạng'},
+    {type:'culture', icon:'fa fa-masks-theater', label:'Di sản văn hóa', desc:'Phong tục, lễ hội, nghề truyền thống dân tộc'},
+    {type:'scenery', icon:'fa fa-mountain-sun', label:'Danh lam thắng cảnh', desc:'Cảnh quan thiên nhiên, địa danh nổi tiếng'},
+  ];
+  document.getElementById('lv1-sub').textContent = `${items.length} nội dung khám phá`;
+  document.getElementById('cat-cards').innerHTML = cats.map(c=>`
+    <div class="cat-card ${c.type}" onclick="navToType('${c.type}')">
+      <div class="cat-icon ${c.type}"><i class="${c.icon}"></i></div>
+      <div class="cat-info">
+        <div class="cat-name">${c.label}</div>
+        <div class="cat-count">${counts[c.type]} mục · Nhấn để khám phá</div>
+      </div>
+      <i class="fa fa-chevron-right cat-arrow"></i>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+//  RENDER LEVEL 2
+// ══════════════════════════════════════════
+function renderLv2(){
+  if(!curArea||!curType) return;
+  const items = curArea.items.filter(i=>i.type===curType);
+  const labels={history:'Di tích lịch sử',culture:'Di sản văn hóa',scenery:'Danh lam thắng cảnh'};
+  const icons={history:'fa fa-landmark',culture:'fa fa-masks-theater',scenery:'fa fa-mountain-sun'};
+  const badge=document.getElementById('lv2-badge');
+  badge.className=`lv2-badge ${curType}`;
+  badge.innerHTML=`<i class="${icons[curType]}"></i>${labels[curType]}`;
+  document.getElementById('lv2-title').textContent = `${items.length} nội dung tại ${curArea.name}`;
+  const list=document.getElementById('item-list');
+  if(!items.length){
+    list.innerHTML=`<div class="listempty"><i class="fa fa-inbox"></i>Chưa có nội dung</div>`; return;
+  }
+  list.innerHTML = items.map((item,i)=>{
+    const thumb = item.mediaList && item.mediaList[0];
+    const thumbHtml = thumb
+      ? (isYouTube(thumb.url)
+          ? `<div class="item-thumb-ph"><i class="fa-brands fa-youtube" style="color:#ef4444"></i></div>`
+          : `<img class="item-thumb" src="${thumb.url}" onerror="this.outerHTML='<div class=item-thumb-ph><i class=fa fa-image></i></div>'">`)
+      : `<div class="item-thumb-ph"><i class="fa fa-image"></i></div>`;
+    return `<div class="item-card ${curType}" onclick="navToItem(${i})">
+      ${thumbHtml}
+      <div class="item-info">
+        <div class="item-name">${item.name}</div>
+        <div class="item-desc">${item.desc||''}</div>
+      </div>
+      <i class="fa fa-chevron-right item-arrow"></i>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  RENDER LEVEL 3
+// ══════════════════════════════════════════
+function renderLv3(item){
+  const labels={history:'Di tích lịch sử',culture:'Di sản văn hóa',scenery:'Danh lam thắng cảnh'};
+  const cls={history:'cb-h',culture:'cb-c',scenery:'cb-s'};
+  const badge=document.getElementById('v-badge');
+  badge.className=`cbadge ${cls[item.type]}`;
+  badge.innerHTML=`<i class="fa fa-map-pin"></i>${labels[item.type]}`;
+  document.getElementById('v-name').textContent=item.name;
+  document.getElementById('v-desc').textContent=item.desc||'';
+  document.getElementById('v-q').textContent=item.q||'';
+  document.getElementById('v-ex-txt').textContent=item.ex||'';
+  document.getElementById('v-ex').style.display='none';
+  document.getElementById('pqgal').style.display='none';
+
+  const mlist=buildMediaList(item);
+  showSpotlight(mlist);
+  renderGstrip(mlist);
+
+  const ansEl=document.getElementById('v-ans');
+  ansEl.innerHTML='';
+  const correct=item.ans&&item.ans[0];
+  const letters=['A','B','C','D'];
+  if(item.ans && item.ans.filter(x=>x&&x.trim()).length){
+    [...item.ans].filter(x=>x&&x.trim()).sort(()=>Math.random()-.5).forEach((txt,li)=>{
+      const btn=document.createElement('button');
+      btn.className='abtn';
+      btn.innerHTML=`<div class="aletter">${letters[li]}</div><span>${txt}</span>`;
+      btn.onclick=()=>{
+        if(btn.disabled)return;
+        document.querySelectorAll('.abtn').forEach(b=>{
+          b.disabled=true;
+          b.classList.add(b.querySelector('span').textContent===correct?'ok':'ng');
+        });
+        if(txt===correct){
+          toast('🎉 Chính xác!','#059669');
+          document.getElementById('v-ex').style.display='block';
+          const extras=item.extraMedia||(mlist.length>1?mlist.slice(1):[]);
+          showPostQuizGallery(extras.length?extras:mlist,mlist);
+        } else { toast('✗ Chưa đúng, thử lại!','#dc2626'); }
+      };
+      ansEl.appendChild(btn);
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+//  MARKERS — Không ghim khu vực, chỉ highlight circle + ghim điểm cụ thể
+// ══════════════════════════════════════════
+let areaCircles = [];
+function loadMarkers(){
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  areaCircles.forEach(c=>map.removeLayer(c)); areaCircles=[];
+  const isAdm=document.getElementById('p-adm').classList.contains('on');
+
+  areas.forEach(area=>{
+    // Vòng tròn highlight khu vực (kiểu Google Maps) — không phải ghim
+    const circle = L.circle([area.lat,area.lng],{
+      radius: 1800,
+      color: '#1a4a7a', fillColor: '#1a4a7a',
+      fillOpacity: 0.08, weight: 2, opacity: 0.35,
+      dashArray: isAdm ? '6,4' : null
+    }).addTo(map);
+    // Label tên khu vực nằm trên vòng tròn
+    const label = L.marker([area.lat, area.lng], {
+      icon: L.divIcon({
+        html: `<div style="background:rgba(26,74,122,0.88);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer">${area.name}</div>`,
+        className: '', iconAnchor: [60, 14]
+      }),
+      interactive: true
+    }).addTo(map);
+    label.on('click', e=>{
+      L.DomEvent.stopPropagation(e);
+      if(!isAdm){ switchTab('exp'); navToArea(area.id); }
+    });
+    circle.on('click', e=>{
+      L.DomEvent.stopPropagation(e);
+      if(!isAdm){ switchTab('exp'); navToArea(area.id); }
+    });
+    areaCircles.push(circle); areaCircles.push(label);
+
+    // Ghim điểm cụ thể (item có tọa độ)
+    (area.items||[]).forEach((item,idx)=>{
+      if(!item.lat||!item.lng) return;
+      const c=item.type==='history'?'#dc2626':item.type==='culture'?'#0ea5e9':'#d97706';
+      const icon=L.divIcon({html:`<div class="pin" style="background:${c}"></div>`,className:'',iconSize:[28,28],iconAnchor:[14,28]});
+      const m=L.marker([item.lat,item.lng],{icon,draggable:isAdm}).addTo(map);
+      m.bindTooltip(item.name,{permanent:false,direction:'top',className:'leaflet-tooltip',offset:[0,-18]});
+      m.on('click',e=>{
+        L.DomEvent.stopPropagation(e);
+        if(!isAdm){
+          switchTab('exp');
+          curArea=area; curType=item.type;
+          const items=area.items.filter(i=>i.type===item.type);
+          const itemIdx=items.indexOf(item);
+          navToArea(area.id);
+          setTimeout(()=>navToType(item.type),350);
+          setTimeout(()=>navToItem(itemIdx),650);
+        }
+      });
+      if(isAdm) m.on('dragend',e=>{const p=e.target.getLatLng();item.lat=+p.lat.toFixed(6);item.lng=+p.lng.toFixed(6);localSave();});
+      markers.push(m);
+    });
+  });
+}
+
+// ══════════════════════════════════════════
+//  SEARCH — Tìm khu vực + mục cụ thể
+// ══════════════════════════════════════════
+let searchOpen=false;
+function toggleSearch(){
+  searchOpen=!searchOpen;
+  document.getElementById('search-wrap').classList.toggle('open',searchOpen);
+  if(searchOpen) document.getElementById('search-inp').focus();
+  else{ document.getElementById('search-drop').style.display='none'; document.getElementById('search-inp').value=''; }
+}
+function liveSearch(v){
+  const drop=document.getElementById('search-drop');
+  if(!v.trim()){drop.style.display='none';return;}
+  const results=[];
+  // Tìm khu vực
+  areas.filter(a=>a.name.toLowerCase().includes(v.toLowerCase())).slice(0,3).forEach(a=>{
+    results.push({label:a.name,sub:'Khu vực',color:'var(--p)',fn:()=>navToArea(a.id)});
+  });
+  // Tìm mục
+  areas.forEach(a=>{
+    (a.items||[]).filter(i=>i.name.toLowerCase().includes(v.toLowerCase())).slice(0,4).forEach(item=>{
+      const labels={history:'Di tích',culture:'Di sản văn hóa',scenery:'Thắng cảnh'};
+      const colors={history:'var(--red)',culture:'var(--blue)',scenery:'var(--gold)'};
+      results.push({label:item.name,sub:`${a.name} · ${labels[item.type]}`,color:colors[item.type],fn:()=>{
+        curArea=a; curType=item.type;
+        const items=a.items.filter(i=>i.type===item.type);
+        navToArea(a.id);
+        setTimeout(()=>navToType(item.type),400);
+        setTimeout(()=>navToItem(items.indexOf(item)),700);
+        switchTab('exp');
+      }});
+    });
+  });
+  if(!results.length){drop.style.display='none';return;}
+  drop.innerHTML=results.slice(0,7).map((r,i)=>`
+    <div class="sr-item" onclick="pickSearch(${i})">
+      <div style="width:8px;height:8px;border-radius:50%;background:${r.color};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--tx)">${r.label}</div>
+        <div style="font-size:11px;color:var(--tx2)">${r.sub}</div>
+      </div>
+    </div>`).join('');
+  window._srFns=results.map(r=>r.fn);
+  drop.style.display='block';
+}
+function pickSearch(i){
+  document.getElementById('search-drop').style.display='none';
+  document.getElementById('search-inp').value='';
+  searchOpen=false; document.getElementById('search-wrap').classList.remove('open');
+  if(window._srFns&&window._srFns[i]) window._srFns[i]();
+}
+
+// ══════════════════════════════════════════
+//  MAP TOOLS
+// ══════════════════════════════════════════
+function toggleLayer(){
+  if(isSat){map.removeLayer(lSat);lStreet.addTo(map);document.getElementById('btn-layer').innerHTML='<i class="fa fa-map"></i>';}
+  else{map.removeLayer(lStreet);lSat.addTo(map);document.getElementById('btn-layer').innerHTML='<i class="fa fa-satellite"></i>';}
+  isSat=!isSat;
+}
+function goHome(){map.flyTo([21.3891,103.0227],10,{duration:1.2});navHome();}
+function resetNorth(){mapRotation=0;document.getElementById('map').style.transform='';document.getElementById('btn-north').style.transform='';}
+
+// ══════════════════════════════════════════
+//  MEDIA HELPERS
+// ══════════════════════════════════════════
+function buildMediaList(item){
+  if(item.mediaList&&item.mediaList.length) return item.mediaList;
+  if(item.media) return [{url:item.media,type:item.mType||'image'}];
+  return [];
+}
+function getYouTubeId(url){
+  if(!url)return null;
+  const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+  return m?m[1]:null;
+}
+function isYouTube(url){return!!getYouTubeId(url);}
+function getYouTubeThumbnail(url){const id=getYouTubeId(url);return id?`https://img.youtube.com/vi/${id}/mqdefault.jpg`:null;}
+
+// SPOTLIGHT
+let spMediaList=[],spIdx=0;
+function lbOpenFromSpot(){lbOpen(spMediaList,spIdx);}
+function showSpotlight(mlist){
+  spMediaList=mlist.filter(m=>m&&m.url); spIdx=0;
+  if(!spMediaList.length){document.getElementById('spotlight').style.display='none';return;}
+  renderSpot(); document.getElementById('spotlight').style.display='block';
+  const has=spMediaList.length>1;
+  document.getElementById('sp-prev').style.display=has?'flex':'none';
+  document.getElementById('sp-next').style.display=has?'flex':'none';
+}
+function renderSpot(){
+  const m=spMediaList[spIdx];
+  const el=document.getElementById('sp-media');
+  if(isYouTube(m.url)){
+    const thumb=getYouTubeThumbnail(m.url);
+    el.innerHTML=`<div style="position:relative;width:100%;height:265px">
+      <img src="${thumb}" style="width:100%;height:265px;object-fit:cover">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25)">
+        <div style="width:60px;height:60px;background:rgba(255,0,0,.9);border-radius:50%;display:flex;align-items:center;justify-content:center">
+          <i class="fa fa-play" style="color:#fff;font-size:22px;margin-left:4px"></i>
+        </div>
+      </div>
+    </div>`;
+  } else if(m.type==='video'){
+    el.innerHTML=`<video src="${m.url}" autoplay muted loop style="width:100%;height:265px;object-fit:cover"></video>`;
+  } else {
+    el.innerHTML=`<img src="${m.url}" style="width:100%;height:265px;object-fit:cover">`;
+  }
+  const dots=document.getElementById('sp-dots');
+  dots.innerHTML=spMediaList.map((_,i)=>`<div class="sp-dot${i===spIdx?' on':''}" onclick="event.stopPropagation();spGo(${i})"></div>`).join('');
+}
+function spNav(d){spGo((spIdx+d+spMediaList.length)%spMediaList.length);}
+function spGo(i){spIdx=i;renderSpot();}
+
+// GALLERY STRIP
+function renderGstrip(mlist){
+  const gs=document.getElementById('gstrip'); gs.innerHTML='';
+  mlist.forEach((m,idx)=>{
+    if(!m.url)return;
+    const d=document.createElement('div'); d.className='gthumb';
+    if(isYouTube(m.url)){
+      const yt=getYouTubeThumbnail(m.url);
+      d.innerHTML=`<div style="position:relative;width:100%;height:100%"><img src="${yt}" style="width:100%;height:100%;object-fit:cover"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3)"><i class="fa fa-play" style="color:#fff;font-size:12px"></i></div></div>`;
+    } else if(m.type==='video'){
+      d.innerHTML=`<div style="width:100%;height:100%;background:#0f172a;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:20px"><i class="fa fa-circle-play"></i></div>`;
+    } else {
+      d.innerHTML=`<img src="${m.url}" onerror="this.parentNode.style.display='none'">`;
+    }
+    d.onclick=()=>lbOpen(mlist,idx); gs.appendChild(d);
+  });
+}
+
+// LIGHTBOX
+let lbList=[],lbIdx=0;
+function lbOpen(list,startIdx=0){
+  lbList=list.filter(m=>m&&m.url); lbIdx=Math.min(startIdx,lbList.length-1);
+  if(!lbList.length)return;
+  document.getElementById('lb').classList.add('on'); renderLb();
+  document.body.style.overflow='hidden';
+}
+function lbClose(){
+  const vid=document.querySelector('#lb-media video'); if(vid)vid.pause();
+  const iframe=document.querySelector('#lb-media iframe'); if(iframe)iframe.src='';
+  document.getElementById('lb').classList.remove('on'); document.body.style.overflow='';
+}
+function lbNav(d){
+  const vid=document.querySelector('#lb-media video'); if(vid)vid.pause();
+  lbIdx=(lbIdx+d+lbList.length)%lbList.length; renderLb();
+}
+function renderLb(){
+  const m=lbList[lbIdx]; const wrap=document.getElementById('lb-media');
+  if(isYouTube(m.url)){
+    const thumb=getYouTubeThumbnail(m.url);
+    wrap.innerHTML=`<div style="position:relative;width:min(86vw,640px);border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);cursor:pointer" onclick="window.open('${m.url}','_blank')">
+      <img src="${thumb}" style="width:100%;display:block;object-fit:cover">
+      <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.7),rgba(0,0,0,.1) 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+        <div style="width:72px;height:72px;background:#ff0000;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,0,0,.5)"><i class="fa fa-play" style="color:#fff;font-size:26px;margin-left:5px"></i></div>
+        <div style="color:#fff;font-size:15px;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8)">Nhấn để xem trên YouTube</div>
+        <div style="background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:30px;padding:8px 24px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px"><i class="fa-brands fa-youtube" style="color:#ff4444"></i> Mở YouTube</div>
+      </div>
+    </div>`;
+  } else if(m.type==='video'){
+    wrap.innerHTML=`<video src="${m.url}" controls autoplay playsinline style="max-width:86vw;max-height:76vh;border-radius:12px;background:#000"></video>`;
+  } else {
+    wrap.innerHTML=`<img src="${m.url}" alt="" style="max-width:86vw;max-height:76vh;border-radius:12px;object-fit:contain">`;
+  }
+  document.getElementById('lb-cnt').textContent=lbList.length>1?`${lbIdx+1} / ${lbList.length}`:'';
+  const th=document.getElementById('lb-thumbs');
+  th.innerHTML=lbList.length>1?lbList.map((x,i)=>{
+    const cls=i===lbIdx?'lb-th on':'lb-th';
+    if(isYouTube(x.url)) return `<div class="${cls}" onclick="lbJump(${i})" style="position:relative"><img src="${getYouTubeThumbnail(x.url)}"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4)"><i class="fa-brands fa-youtube" style="color:#ff4444;font-size:14px"></i></div></div>`;
+    if(x.type==='video') return `<div class="${cls}" onclick="lbJump(${i})"><i class="fa fa-circle-play"></i></div>`;
+    return `<div class="${cls}" onclick="lbJump(${i})"><img src="${x.url}"></div>`;
+  }).join(''):'';
+  document.getElementById('lb-prv').style.display=lbList.length>1?'flex':'none';
+  document.getElementById('lb-nxt').style.display=lbList.length>1?'flex':'none';
+}
+function lbJump(i){lbIdx=i;renderLb();}
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('lb').classList.contains('on'))return;
+  if(e.key==='Escape')lbClose();
+  if(e.key==='ArrowLeft')lbNav(-1);
+  if(e.key==='ArrowRight')lbNav(1);
+});
+document.getElementById('lb').addEventListener('click',e=>{
+  if(e.target===document.getElementById('lb'))lbClose();
+});
+
+function showPostQuizGallery(extras,allMedia){
+  const valid=extras.filter(m=>m&&m.url);
+  if(!valid.length){document.getElementById('pqgal').style.display='none';return;}
+  const grid=document.getElementById('pqgrid'); grid.innerHTML='';
+  valid.forEach((m,i)=>{
+    const d=document.createElement('div'); d.className='pqitem';
+    if(isYouTube(m.url)) d.innerHTML=`<img src="${getYouTubeThumbnail(m.url)}"><div class="pqov"><i class="fa fa-play"></i></div>`;
+    else if(m.type==='video') d.innerHTML=`<div style="width:100%;height:100%;background:#0f172a;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:28px"><i class="fa fa-circle-play"></i></div><div class="pqov"><i class="fa fa-play"></i></div>`;
+    else d.innerHTML=`<img src="${m.url}" onerror="this.parentNode.style.display='none'"><div class="pqov"><i class="fa fa-expand"></i></div>`;
+    const openIdx=allMedia.findIndex(x=>x.url===m.url);
+    d.onclick=()=>lbOpen(allMedia,openIdx>=0?openIdx:i);
+    grid.appendChild(d);
+  });
+  document.getElementById('pqgal').style.display='block';
+}
+
+// ══════════════════════════════════════════
+//  ADMIN — CRUD
+// ══════════════════════════════════════════
+function populateAreaSelect(){
+  const sel=document.getElementById('in-area');
+  sel.innerHTML='<option value="">-- Chọn khu vực --</option>';
+  areas.forEach(a=>{ const o=document.createElement('option'); o.value=a.id; o.textContent=a.name; sel.appendChild(o); });
+}
+
+function addNewArea(){
+  const name=document.getElementById('in-area-new').value.trim();
+  if(!name)return toast('⚠ Nhập tên khu vực mới','#dc2626');
+  const id='area_'+Date.now();
+  areas.push({id,name,lat:21.3891,lng:103.0227,zoom:12,items:[]});
+  localSave(); populateAreaSelect();
+  document.getElementById('in-area').value=id;
+  document.getElementById('in-area-new').value='';
+  toast('✔ Đã tạo khu vực: '+name,'#059669');
+}
+
+function renderList(filter=''){
+  const cnt=document.getElementById('cnt-badge');
+  let total=0; areas.forEach(a=>total+=(a.items||[]).length);
+  cnt.textContent=total;
+  const wrap=document.getElementById('list-items');
+  const typeLabel={history:'Di tích lịch sử',culture:'Di sản văn hóa',scenery:'Danh lam thắng cảnh'};
+  let html='';
+  areas.forEach(a=>{
+    const items=(a.items||[]).filter(i=>!filter||i.name.toLowerCase().includes(filter.toLowerCase()));
+    // Header khu vực — có nút Sửa tên + Xóa khu vực
+    html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px 4px;margin-top:4px">
+      <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:.8px;text-transform:uppercase">${a.name}</div>
+      <div style="display:flex;gap:4px">
+        <button class="iabtn ia-e" onclick="editAreaName('${a.id}')" title="Đổi tên khu vực" style="font-size:10px;padding:3px 8px"><i class="fa fa-pen"></i> Tên</button>
+        <button class="iabtn ia-d" onclick="deleteArea('${a.id}')" title="Xóa khu vực" style="font-size:10px;padding:3px 8px"><i class="fa fa-trash"></i></button>
+      </div>
+    </div>`;
+    if(!items.length){
+      html+=`<div style="font-size:12px;color:var(--tx2);padding:6px 8px 8px;font-style:italic">Chưa có nội dung</div>`;
+    }
+    items.forEach(item=>{
+      const i=a.items.indexOf(item);
+      html+=`<div class="locitem">
+        <div class="lcdot lc-${item.type==='scenery'?'s':item.type==='culture'?'c':'h'}"></div>
+        <div class="lcinfo">
+          <div class="lcname">${item.name}</div>
+          <div class="lcmeta">${typeLabel[item.type]||item.type}${item.lat?' · 📍':''}</div>
+        </div>
+        <div class="lcact">
+          <button class="iabtn ia-e" onclick="startEdit('${a.id}',${i})"><i class="fa fa-pen"></i></button>
+          <button class="iabtn ia-d" onclick="delItem('${a.id}',${i})"><i class="fa fa-trash"></i></button>
+        </div>
+      </div>`;
+    });
+  });
+  wrap.innerHTML=html||`<div class="listempty"><i class="fa fa-map-pin"></i><span>Chưa có nội dung</span></div>`;
+}
+
+function editAreaName(areaId){
+  const area=areas.find(a=>a.id===areaId); if(!area)return;
+  const newName=prompt('Đổi tên khu vực:',area.name);
+  if(newName&&newName.trim()&&newName.trim()!==area.name){
+    area.name=newName.trim(); localSave(); renderList(); loadMarkers(); populateAreaSelect();
+    toast('✔ Đã đổi tên khu vực','#059669');
+  }
+}
+
+async function deleteArea(areaId){
+  const area=areas.find(a=>a.id===areaId); if(!area)return;
+  if(!confirm(`Xóa toàn bộ khu vực "${area.name}" và ${area.items?.length||0} nội dung bên trong?`))return;
+  areas=areas.filter(a=>a.id!==areaId);
+  localSave(); renderList(); loadMarkers(); populateAreaSelect();
+  if(ghCfg.owner&&ghCfg.repo&&ghCfg.token) await ghPush();
+  toast('✔ Đã xóa khu vực','#059669');
+}
+function filterList(v){renderList(v);}
+
+function addMediaRow(url='',type='image'){
+  const row=document.createElement('div'); row.className='mrow';
+  row.innerHTML=`<img class="mrthumb" src="${url||''}" ${url?'style="display:block"':''}>
+    <select onchange="updateRowThumb(this)"><option value="image" ${type==='image'?'selected':''}>🖼 Ảnh</option><option value="video" ${type==='video'?'selected':''}>🎬 Video</option></select>
+    <input type="text" placeholder="Dán link ảnh/video/YouTube..." value="${url||''}" oninput="updateRowThumb(this)">
+    <button class="mrdel" onclick="this.parentNode.remove()"><i class="fa fa-times"></i></button>`;
+  document.getElementById('mlist').appendChild(row);
+}
+function updateRowThumb(el){
+  const row=el.closest('.mrow'), inp=row.querySelector('input'), sel=row.querySelector('select'), thumb=row.querySelector('.mrthumb');
+  const url=inp.value.trim();
+  if(sel.value==='image'&&url&&!isYouTube(url)){thumb.src=url;thumb.style.display='block';thumb.onerror=()=>thumb.style.display='none';}
+  else thumb.style.display='none';
+}
+function getMediaRows(){
+  return [...document.querySelectorAll('#mlist .mrow')].map(row=>{
+    const url=row.querySelector('input').value.trim(), type=row.querySelector('select').value;
+    return url?{url,type}:null;
+  }).filter(Boolean);
+}
+
+async function doSave(){
+  const editArea=document.getElementById('edit-id').dataset.area;
+  const editIdx=parseInt(document.getElementById('edit-id').dataset.idx??'-1');
+  const areaId=document.getElementById('in-area').value;
+  if(!areaId)return toast('⚠ Chọn khu vực trước','#dc2626');
+  const area=areas.find(a=>a.id===areaId);
+  if(!area)return toast('⚠ Khu vực không hợp lệ','#dc2626');
+  const name=document.getElementById('in-name').value.trim();
+  if(!name)return toast('⚠ Nhập tên nội dung','#dc2626');
+  const lat=parseFloat(document.getElementById('in-lat').value)||undefined;
+  const lng=parseFloat(document.getElementById('in-lng').value)||undefined;
+  const data={
+    type:document.getElementById('in-type').value,
+    name, desc:document.getElementById('in-desc').value.trim(),
+    mediaList:getMediaRows(),
+    q:document.getElementById('in-q').value.trim(),
+    ans:['in-a1','in-a2','in-a3','in-a4'].map(x=>document.getElementById(x).value.trim()),
+    ex:document.getElementById('in-ex').value.trim()
+  };
+  if(lat&&lng){data.lat=lat;data.lng=lng;}
+  if(!area.items)area.items=[];
+  // Nếu đang sửa cùng khu vực
+  if(editArea===areaId && editIdx>=0) area.items[editIdx]=data;
+  else {
+    // Nếu chuyển khu vực khi sửa
+    if(editArea && editIdx>=0){ const oldArea=areas.find(a=>a.id===editArea); if(oldArea) oldArea.items.splice(editIdx,1); }
+    area.items.push(data);
+  }
+  localSave(); resetForm(); loadMarkers(); renderList(); switchAdmTab('list');
+  if(ghCfg.owner&&ghCfg.repo&&ghCfg.token){ toast('Đang đồng bộ...','#1e40af'); await ghPush(); }
+  else toast('✔ Đã lưu','#059669');
+}
+
+function startEdit(areaId,idx){
+  const area=areas.find(a=>a.id===areaId); if(!area)return;
+  const item=area.items[idx]; if(!item)return;
+  document.getElementById('edit-id').dataset.area=areaId;
+  document.getElementById('edit-id').dataset.idx=idx;
+  populateAreaSelect();
+  document.getElementById('in-area').value=areaId;
+  document.getElementById('in-type').value=item.type||'history';
+  document.getElementById('in-name').value=item.name||'';
+  document.getElementById('in-desc').value=item.desc||'';
+  document.getElementById('in-lat').value=item.lat||'';
+  document.getElementById('in-lng').value=item.lng||'';
+  document.getElementById('in-q').value=item.q||'';
+  ['a1','a2','a3','a4'].forEach((k,j)=>document.getElementById('in-'+k).value=(item.ans&&item.ans[j])||'');
+  document.getElementById('in-ex').value=item.ex||'';
+  document.getElementById('mlist').innerHTML='';
+  buildMediaList(item).forEach(m=>addMediaRow(m.url,m.type));
+  document.getElementById('form-title').innerHTML='<i class="fa fa-pen"></i>Chỉnh sửa nội dung';
+  document.getElementById('btn-cancel').style.display='block';
+  document.getElementById('btn-save').innerHTML='<i class="fa fa-floppy-disk"></i>Cập nhật';
+  switchAdmTab('form');
+  document.getElementById('aform').scrollTo({top:0,behavior:'smooth'});
+}
+
+function cancelEdit(){resetForm();switchAdmTab('list');}
+
+function resetForm(){
+  document.getElementById('edit-id').dataset.area='';
+  document.getElementById('edit-id').dataset.idx='-1';
+  ['in-name','in-desc','in-lat','in-lng','in-q','in-a1','in-a2','in-a3','in-a4','in-ex'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('in-area').value='';
+  document.getElementById('in-type').value='history';
+  document.getElementById('mlist').innerHTML='';
+  document.getElementById('btn-cancel').style.display='none';
+  document.getElementById('btn-save').innerHTML='<i class="fa fa-floppy-disk"></i>Lưu nội dung';
+  document.getElementById('form-title').innerHTML='<i class="fa fa-plus-circle"></i>Thêm nội dung mới';
+}
+
+async function delItem(areaId,idx){
+  const area=areas.find(a=>a.id===areaId); if(!area)return;
+  if(!confirm(`Xóa "${area.items[idx]?.name}"?`))return;
+  area.items.splice(idx,1); localSave(); loadMarkers(); renderList();
+  if(ghCfg.owner&&ghCfg.repo&&ghCfg.token) await ghPush();
+}
+
+// MAP CLICK → coords
+map.on('click',e=>{
+  if(document.getElementById('p-adm').classList.contains('on')){
+    document.getElementById('in-lat').value=e.latlng.lat.toFixed(6);
+    document.getElementById('in-lng').value=e.latlng.lng.toFixed(6);
+    toast('📍 Đã lấy tọa độ','#0ea5e9');
+    if(!document.getElementById('aform').classList.contains('on'))switchAdmTab('form');
+  }
+});
+
+// ══════════════════════════════════════════
+//  GITHUB
+// ══════════════════════════════════════════
+function toggleGh(){
+  const p=document.getElementById('ghpnl'); p.classList.toggle('on');
+  document.getElementById('ghchev').className=p.classList.contains('on')?'fa fa-chevron-up':'fa fa-chevron-down';
+  if(p.classList.contains('on')){
+    document.getElementById('gh-owner').value=ghCfg.owner||'phigong88';
+    document.getElementById('gh-repo').value=ghCfg.repo||'bandokhamphadienbien';
+    document.getElementById('gh-file').value=ghCfg.file||'data/locations.json';
+    document.getElementById('gh-token').value=ghCfg.token||'';
+  }
+}
+function setGhStatus(s){
+  const dot=document.getElementById('ghdot'),lbl=document.getElementById('ghbarlabel');
+  dot.className='ghdot'+(s==='ok'?' ok':s==='sync'?' sync':'');
+  const msgs={ok:'GitHub — Đã kết nối',sync:'GitHub — Đang đồng bộ...',err:'GitHub — Lỗi',off:'GitHub — Chưa kết nối'};
+  lbl.textContent=msgs[s]||msgs.off;
+}
+function ghLog(msg,type='info'){
+  const el=document.getElementById('ghlog');
+  el.style.color=type==='error'?'#f87171':type==='ok'?'#4ade80':'#94a3b8'; el.textContent=msg;
+}
+async function ghConnect(){
+  ghCfg.owner=document.getElementById('gh-owner').value.trim();
+  ghCfg.repo=document.getElementById('gh-repo').value.trim();
+  ghCfg.file=document.getElementById('gh-file').value.trim()||'data/locations.json';
+  ghCfg.token=document.getElementById('gh-token').value.trim();
+  if(!ghCfg.owner||!ghCfg.repo||!ghCfg.token)return ghLog('⚠ Điền đầy đủ thông tin','error');
+  setGhStatus('sync'); ghLog('Đang kiểm tra...');
+  try{
+    const r=await fetch(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}`,{headers:{'Authorization':`token ${ghCfg.token}`,'Accept':'application/vnd.github.v3+json'}});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const d=await r.json();
+    localStorage.setItem('GH_CFG_V6',JSON.stringify(ghCfg));
+    setGhStatus('ok'); ghLog(`✔ ${d.full_name}`,'ok'); toast('✔ GitHub kết nối thành công','#059669');
+  }catch(e){setGhStatus('err');ghLog(`✘ ${e.message}`,'error');}
+}
+async function ghGetSha(){
+  try{
+    const r=await fetch(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${ghCfg.file}`,{headers:{'Authorization':`token ${ghCfg.token}`,'Accept':'application/vnd.github.v3+json'}});
+    if(r.status===404)return null;
+    return(await r.json()).sha;
+  }catch{return null;}
+}
+async function ghPush(){
+  if(!ghCfg.owner||!ghCfg.repo||!ghCfg.token)return ghLog('⚠ Chưa cấu hình GitHub','error');
+  setGhStatus('sync'); ghLog('Đang đẩy dữ liệu...');
+  try{
+    const sha=await ghGetSha();
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(areas,null,2))));
+    const body={message:`Cập nhật bản đồ — ${new Date().toLocaleString('vi-VN')}`,content};
+    if(sha)body.sha=sha;
+    const r=await fetch(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${ghCfg.file}`,{method:'PUT',headers:{'Authorization':`token ${ghCfg.token}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},body:JSON.stringify(body)});
+    if(!r.ok){const e=await r.json();throw new Error(e.message||`HTTP ${r.status}`);}
+    const rs=await r.json(); ghCfg.sha=rs.content.sha;
+    localStorage.setItem('GH_CFG_V6',JSON.stringify(ghCfg));
+    setGhStatus('ok'); ghLog(`✔ Đã đẩy lúc ${new Date().toLocaleTimeString('vi-VN')}`,'ok'); toast('☁ Đã lưu lên GitHub','#1d4ed8');
+  }catch(e){setGhStatus('ok');ghLog(`✘ ${e.message}`,'error');}
+}
+async function ghPull(){
+  if(!ghCfg.owner||!ghCfg.repo||!ghCfg.token)return ghLog('⚠ Chưa cấu hình GitHub','error');
+  setGhStatus('sync'); ghLog('Đang tải dữ liệu...');
+  try{
+    const r=await fetch(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${ghCfg.file}`,{headers:{'Authorization':`token ${ghCfg.token}`,'Accept':'application/vnd.github.v3+json'}});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const d=await r.json();
+    areas=JSON.parse(decodeURIComponent(escape(atob(d.content))));
+    localSave(); loadMarkers(); renderList();
+    setGhStatus('ok'); ghLog(`✔ Đã tải ${areas.length} khu vực`,'ok'); toast(`📥 Đã cập nhật dữ liệu`,'#7c3aed');
+  }catch(e){setGhStatus('ok');ghLog(`✘ ${e.message}`,'error');}
+}
+
+// ══════════════════════════════════════════
+//  AUTO LOAD — Tải từ raw URL công khai
+// ══════════════════════════════════════════
+async function autoLoad(){
+  document.getElementById('ldmsg').textContent='Đang tải dữ liệu...';
+  try{
+    const r=await fetch(RAW_URL+'?t='+Date.now());
+    if(r.ok){
+      const parsed=await r.json();
+      if(parsed&&parsed.length&&parsed[0].items){
+        areas=parsed; localSave();
+      }
+    }
+  }catch{}
+  if(ghCfg.token) setGhStatus('ok'); else setGhStatus('off');
+  populateAreaSelect();
+  loadMarkers();
+  document.getElementById('loading').style.display='none';
+}
+
+autoLoad();
+</script>
+</body>
+</html>

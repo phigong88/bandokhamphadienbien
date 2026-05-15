@@ -1,0 +1,352 @@
+[
+  {
+    "id": "dbp",
+    "name": "Phường Điện Biên Phủ",
+    "lat": 21.392114,
+    "lng": 103.016449,
+    "zoom": 14,
+    "items": [
+      {
+        "type": "history",
+        "name": "Di tích lịch sử Đồi A1",
+        "desc": "Cứ điểm kiên cố nhất trong tập đoàn cứ điểm Điện Biên Phủ, nơi diễn ra trận đánh ác liệt nhất suốt 39 ngày đêm.",
+        "mediaList": [
+          {
+            "url": "https://cdn3.ivivu.com/2023/02/%C4%90%E1%BB%93i-A1-ivivu-7-B%C3%A1o-Thanh-Ni%C3%AAn.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://kenh14cdn.com/zoom/700_438/203336854389633024/2026/5/10/avatar1778375325558-1778375326002935524447-0-0-410-656-crop-1778375385026336661025.png",
+            "type": "image"
+          },
+          {
+            "url": "https://vstatic.vietnam.vn/vietnam/resource/IMAGE/2025/1/23/6f17913f7b7a487dad0cf42cc1977edd",
+            "type": "image"
+          }
+        ],
+        "q": "Khối bộc phá được kích nổ tại đồi A1 đêm 6/5/1954 nặng bao nhiêu kg?",
+        "ans": [
+          "960 kg",
+          "500 kg",
+          "1.200 kg",
+          "750 kg"
+        ],
+        "ex": "Khối thuốc nổ 960 kg được đặt vào đường hầm đào xuyên lòng đồi, khi phát nổ tạo ra hố phễu rộng hơn 100m² còn lưu dấu đến ngày nay. Đây là hiệu lệnh mở đầu cuộc tổng công kích cuối cùng dẫn đến chiến thắng ngày 7/5/1954.",
+        "lat": 21.382963,
+        "lng": 103.017833
+      },
+      {
+        "type": "history",
+        "name": "Hầm chỉ huy Tập đoàn cứ điểm Điện Biên Phủ",
+        "desc": "Căn hầm kiên cố nhất Đông Dương, nơi đặt Bộ chỉ huy tập đoàn cứ điểm Điện Biên Phủ của quân Pháp.",
+        "mediaList": [
+          {
+            "url": "https://i2.ex-cdn.com/crystalbay.com/files/content/2025/03/06/ham-do-cat-1-1631.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://cdn-images.vtv.vn/562122370168008704/2024/5/2/ntd4231-17146315549851002983434.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://cdn3.ivivu.com/2023/02/H%E1%BA%A7m-%C4%90%E1%BB%9D-C%C3%A1t-ivivu-5-B%C3%A1o-B%E1%BA%AFc-Giang.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://dulichkhatvongviet.com/wp-content/uploads/2022/02/20161114090543-ham-chi-huy-tuong-do-cat-gody8-1-e1645285235446.jpg",
+            "type": "image"
+          }
+        ],
+        "q": "Tướng Pháp nào đã ra đầu hàng tại hầm chỉ huy chiều 7/5/1954?",
+        "ans": [
+          "Tướng Christian de Castries",
+          "Tướng Henri Navarre",
+          "Tướng Jean de Lattre",
+          "Tướng Cogny"
+        ],
+        "ex": "Chiều 7/5/1954, Tướng Christian de Castries cùng toàn bộ bộ tham mưu ra khỏi hầm giơ tay đầu hàng, chấm dứt 56 ngày đêm chiến đấu lịch sử.",
+        "lat": 21.384892,
+        "lng": 103.010677
+      },
+      {
+        "type": "culture",
+        "name": "Nghệ thuật Xòe Thái",
+        "desc": "Múa xòe hay còn gọi là nghệ thuật Xoè Thái là vũ điệu truyền thống đặc trưng của người Thái, gắn chặt với đời sống tâm linh, lao động và tính kết nối cộng đồng. Điện Biên tự hào là một trong những cái nôi lớn sở hữu kho tàng các điệu xòe nguyên bản.",
+        "mediaList": [
+          {
+            "url": "https://cdn3.ivivu.com/2023/02/M%C3%BAa-x%C3%B2e-Th%C3%A1i-ivivu-1-1024x691.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://cdn3.ivivu.com/2023/02/M%C3%BAa-x%C3%B2e-Th%C3%A1i-ivivu-7-T%E1%BB%95-Qu%E1%BB%91c.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://file3.qdnd.vn/data/images/0/2024/03/17/upload_2232/zap_6833-%201%20ch398389.jpg?dpi=150&quality=100&w=870",
+            "type": "image"
+          },
+          {
+            "url": "https://file3.qdnd.vn/data/images/0/2024/03/17/upload_2232/zap_6853-%201%20c3309390.jpg?dpi=150&quality=100&w=870",
+            "type": "image"
+          },
+          {
+            "url": "https://file3.qdnd.vn/data/images/0/2024/03/17/upload_2232/zap_6555c3309390.jpg?dpi=150&quality=100&w=870",
+            "type": "image"
+          }
+        ],
+        "q": "Nghệ thuật Xòe Thái được UNESCO ghi danh Di sản văn hóa phi vật thể nhân loại vào năm nào?",
+        "ans": [
+          "Năm 2021",
+          "Năm 2019",
+          "Năm 2016",
+          "Năm 2023"
+        ],
+        "ex": "Ngày 1/12/2021, tại kỳ họp thứ 16 của Ủy ban Liên Chính phủ UNESCO, Nghệ thuật Xòe Thái chính thức được ghi danh Di sản văn hóa phi vật thể đại diện của nhân loại. Nnhững buổi diễn múa Xòe Thái không thể thiếu trong những đêm giao lưu văn hóa mà bạn sẽ có dịp chiêm ngưỡng khi du lịch Điện Biên."
+      },
+      {
+        "type": "scenery",
+        "name": "Cánh đồng Mường Thanh",
+        "desc": "Cánh đồng Mường Thanh rộng hơn 5.000 ha — cánh đồng lớn nhất Tây Bắc, gắn liền với nền văn minh lúa nước truyền thống hàng nghìn năm của người Thái.",
+        "mediaList": [
+          {
+            "url": "https://imghappyvietnam.vnanet.vn/MediaUpload/Org/2024/08/29/175138-vna_potal_mua_vang_tren_canh_dong_muong_thanh_dien_bien_6105824.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://imagevietnam.vnanet.vn//MediaUpload/Org/2025/05/20/vna-potal-thang-5-ruc-ro-tren-canh-dong-muong-thanh-804280620-10-28-55.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://imghappyvietnam.vnanet.vn/MediaUpload/Org/2024/08/29/175138-vna_potal_mua_vang_tren_canh_dong_muong_thanh_dien_bien_6105849.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://imghappyvietnam.vnanet.vn/MediaUpload/Org/2024/08/29/175121-vna_potal_mua_vang_tren_canh_dong_muong_thanh_dien_bien_6105881.jpg",
+            "type": "image"
+          }
+        ],
+        "q": "Tên gọi \"Mường Thanh\" ngày nay thực chất được đọc chệch âm từ chữ \"Mường Then\" trong tiếng Thái cổ, từ này có nghĩa gốc là gì?",
+        "ans": [
+          "Xứ Trời (vùng đất của thần tiên)",
+          "Đất vàng phù sa",
+          "Vùng đất bình yên",
+          "Thung lũng sông núi"
+        ],
+        "ex": "\"Mường\" trong tiếng Thái nghĩa là vùng đất/bản mường; \"Thanh\" nghĩa là trời. Cánh đồng Mường Thanh rộng hơn 5.000 ha là vựa lúa lớn nhất vùng Tây Bắc."
+      },
+      {
+        "type": "history",
+        "name": "Tượng đài Chiến thắng Điện Biên Phủ",
+        "desc": "Tượng đài Chiến thắng Điện Biên Phủ là công trình kỳ vĩ khắc họa hình ảnh nhóm nhân vật gồm 3 chiến sĩ bộ đội phối hợp ăn ý và một em bé dân tộc Thái, với lá cờ \"Quyết chiến - Quyết thắng\" được giương cao lên bầu trời. Tác phẩm là biểu tượng cho ý chí kiên cường, tình đoàn kết quân dân và khát vọng hòa bình của dân tộc.",
+        "mediaList": [
+          {
+            "url": "https://file3.qdnd.vn/data/images/0/2024/04/05/upload_2164/anh-2.jpg?dpi=150&quality=100&w=870",
+            "type": "image"
+          },
+          {
+            "url": "https://file3.qdnd.vn/data/images/0/2024/04/05/upload_2164/anh-1.jpg?dpi=150&quality=100&w=870",
+            "type": "image"
+          },
+          {
+            "url": "https://dulichkhatvongviet.com/wp-content/uploads/2022/02/di-tich-doi-d1.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2024/5/6/tuong-dai-chien-thang-dien-bien-phu-9-1714975566986616771720.jpg",
+            "type": "image"
+          }
+        ],
+        "q": "Tượng đài Chiến thắng Điện Biên Phủ được đặt trên ngọn đồi nào?",
+        "ans": [
+          "Đồi D1",
+          "Đồi A1",
+          "Đồi C1",
+          "Đồi Him Lam"
+        ],
+        "ex": "Tượng đài Chiến thắng Điện Biên Phủ tọa lạc trên đồi D1 lịch sử — trung tâm Phường Điện Biên Phủ, cao khoảng 12,6m và nặng 217 tấn là tượng đồng lớn nhất Việt Nam. Từ vị trí đỉnh đồi cao này, du khách có thể phóng tầm mắt ngắm nhìn bao quát toàn cảnh thành Điện Biên Phủ đổi mới và cánh đồng Mường Thanh huyền thoại.",
+        "lat": 21.392144,
+        "lng": 103.018906
+      }
+    ]
+  },
+  {
+    "id": "muonglay",
+    "name": "Phường Mường Lay",
+    "lat": 22.023591,
+    "lng": 103.152952,
+    "zoom": 13,
+    "items": [
+      {
+        "type": "scenery",
+        "name": "Cảnh quan thung lũng sông nước Mường Lay",
+        "desc": "Nơi giao nhau của ba dòng sông lớn (sông Đà, sông Nậm Na và sông Nậm Lay), sở hữu cảnh quan núi non kỳ vĩ soi bóng xuống mặt nước xanh ngắt quanh năm. Nơi đây được ví như một \"vịnh Hạ Long trên núi\" và là điểm du lịch sinh thái, sông nước độc đáo bậc nhất của tỉnh Điện Biên.",
+        "mediaList": [
+          {
+            "url": "https://media-cdn-v2.laodong.vn/storage/newsportal/2025/4/7/1488031/Muong-Lay2.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://media-cdn-v2.laodong.vn/storage/newsportal/2025/4/7/1488031/Muong-Lay3.1.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://media-cdn-v2.laodong.vn/storage/newsportal/2025/4/7/1488031/Muong-Lay4.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://media-cdn-v2.laodong.vn/storage/newsportal/2025/4/7/1488031/Muong-Lay.jpg",
+            "type": "image"
+          }
+        ],
+        "q": "Biển hồ nước mênh mông, hữu tình tạo nên danh thắng tại thị xã Mường Lay ngày nay được hình thành từ việc tích nước của công trình thủy điện lớn nào?",
+        "ans": [
+          "Thủy điện Sơn La",
+          "Thủy điện Hòa Bình",
+          "Thủy điện Lai Châu",
+          "Thủy điện Nà Lơi"
+        ],
+        "ex": "Thị xã Mường Lay nằm bên lòng hồ thủy điện Sơn La — nhà máy thủy điện lớn nhất Đông Nam Á (khi xây dựng), tạo nên cảnh quan hồ núi thơ mộng."
+      },
+      {
+        "type": "culture",
+        "name": "Nghệ thuật Hát Then của người Thái Trắng Mường Lay",
+        "desc": "Nghệ thuật Hát Then là di sản văn hóa phi vật thể quốc gia lưu truyền rộng rãi trong cộng đồng đồng bào Thái Trắng. Trong đó, thị xã Mường Lay được coi là một trong những cái nôi lớn bảo tồn nguyên vẹn các điệu Then cổ kết hợp nhạc cụ bản địa. Loại hình diễn xướng nghi lễ đặc sắc này thường xuất hiện trong các hội đầu xuân như lễ Kin Pang Then, lễ cầu mùa hay cầu mưa nhằm gửi gắm ước vọng của con người lên các đấng thần linh.",
+        "mediaList": [
+          {
+            "url": "https://media-dienbien.baodienbienphu.vn/FG2A2348_2026-01-02-16.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://ttdn.vn/Uploads/Images/2022/12/24/5/4327-13.2.jpg",
+            "type": "image"
+          }
+        ],
+        "q": "Nhạc cụ truyền thống được làm từ nửa quả bầu khô kết hợp cần gỗ, đóng vai trò là \"vật báu\" không thể thiếu để đệm và dẫn đường cho lời hát của thầy Then là gì?",
+        "ans": [
+          "Đàn Tính (Tính tẩu)",
+          "Khèn bè",
+          "Trống đồng",
+          "Sáo trúc"
+        ],
+        "ex": "Đàn Tính (theo tiếng địa phương gọi là Tính tẩu) chính là linh hồn của nghệ thuật hát Then. Thân đàn được chế tác vô cùng đặc biệt với bầu vang làm từ quả bầu già phơi khô, mặt đàn bằng gỗ mỏng và cần đàn bằng gỗ cây dâu long cốt. Đồng bào Thái Trắng ví cây đàn này như một chiếc cầu nối tâm linh hay phương tiện bay, giúp thầy Then truyền gửi lời ca và ước nguyện cầu mưa, cầu mùa của dân bản vượt qua các mường trời để đến với đấng thần linh. Tiếng đàn Tính ngân vang thánh thót, hòa quyện vào lời hát Then thâm trầm tạo nên một không gian văn hóa vừa thiêng liêng, vừa đậm đà bản sắc núi rừng Tây Bắc."
+      }
+    ]
+  },
+  {
+    "id": "muongpha",
+    "name": "Xã Mường Phăng",
+    "lat": 21.426385,
+    "lng": 103.129714,
+    "zoom": 13,
+    "items": [
+      {
+        "type": "history",
+        "name": "Sở chỉ huy Chiến dịch Điện Biên Phủ",
+        "desc": "Nằm ở độ cao trên 1.000m dưới tán rừng cổ thụ, đây là nơi Đại tướng Võ Nguyên Giáp đặt đại bản doanh chỉ huy toàn bộ Chiến dịch Điện Biên Phủ. Chính tại đây, Đại tướng đưa ra quyết định lịch sử thay đổi phương châm tác chiến.",
+        "mediaList": [
+          {
+            "url": "https://cloudcdnvod.tek4tv.vn/MAM/attach/upload/21042024003110/96d363d2-f11e-4656-be8b-c0d11d80d0f7-404.webp",
+            "type": "image"
+          },
+          {
+            "url": "https://cloudcdnvod.tek4tv.vn/MAM/attach/upload/21042024004124/bf9f1dd1-84a6-4549-a315-5e55f940fce8-444.webp",
+            "type": "image"
+          },
+          {
+            "url": "https://cloudcdnvod.tek4tv.vn/MAM/attach/upload/21042024003913/7c3a4805-a0fa-4d4c-b84b-5bb24774a55d-409.webp",
+            "type": "image"
+          },
+          {
+            "url": "https://files.bienphong.com.vn//bbpmedia/media/1200/2024/5/1/45092923pm152120947pmz5380375801984_c9ee4bb3ea4ff9723423e149.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://youtu.be/knD7ZQEfaWQ?si=VZZs6kmoVYLGOuw6",
+            "type": "video"
+          }
+        ],
+        "q": "Đại tướng Võ Nguyên Giáp đã thay đổi phương châm tác chiến thành gì tại Mường Phăng?",
+        "ans": [
+          "Đánh chắc, tiến chắc",
+          "Đánh nhanh, thắng nhanh",
+          "Đánh du kích, tiêu hao",
+          "Bao vây, cô lập"
+        ],
+        "ex": "Sau khi nghiên cứu thực địa, Đại tướng quyết định kéo pháo ra, chuyển sang \"đánh chắc tiến chắc\" — quyết định mà ông gọi là \"khó khăn nhất trong cuộc đời\". Đây là quyết định then chốt làm thay đổi cục diện chiến dịch.",
+        "lat": 21.452799,
+        "lng": 103.160076
+      },
+      {
+        "type": "scenery",
+        "name": "Hồ Pá Khoang",
+        "desc": "Hồ Pá Khoang - có diện tích mặt nước rộng hơn 600ha, cách trung tâm Điện Biên Phủ khoảng 20km. Nơi đây nổi tiếng với cảnh quan thiên nhiên mây vờn sóng nước, các hòn đảo nhân tạo ngập tràn sắc hoa rực rỡ vào dịp đầu xuân và những bản làng người Thái, Khơ Mú ven hồ vẫn giữ nguyên bản sắc văn hóa gốc.",
+        "mediaList": [
+          {
+            "url": "https://cdn3.ivivu.com/2024/01/ho-pa-khoang-ivivu.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://imghappyvietnam.vnanet.vn/MediaUpload/Org/2024/10/08/184913-vna_potal_du_lich_viet_nam_ve_dep_ho_pa_khoang_dien_bien_7164335.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://imghappyvietnam.vnanet.vn/MediaUpload/Org/2024/10/08/184913-vna_potal_du_lich_viet_nam_ve_dep_ho_pa_khoang_dien_bien_7164320.jpg",
+            "type": "image"
+          },
+          {
+            "url": "https://dulichtaybac.vn/wp-content/uploads/2023/11/17.-H%E1%BB%93-P%C3%A1-Khoang-Vi%E1%BB%87t-Linh_V0TyAfhQ0k6yF85E-1024x582.jpg",
+            "type": "image"
+          }
+        ],
+        "q": "Điểm nhấn du lịch lãng mạn, độc đáo bậc nhất thu hút du khách đến với hồ Pá Khoang vào dịp tháng 1 hằng năm là hòn đảo của loài hoa nào?",
+        "ans": [
+          "Hoa anh đào Nhật Bản",
+          "Hoa tam giác mạch",
+          "Hoa cải vàng vùng cao",
+          "Hoa dã quỳ dại"
+        ],
+        "ex": "Đảo hoa anh đào nằm giữa lòng hồ Pá Khoang là kết quả của dự án hợp tác, thuần dưỡng thành công hàng nghìn gốc hoa anh đào có nguồn gốc từ Nhật Bản trên đất Điện Biên. Do đặc trưng khí hậu mát mẻ của vùng lòng chảo Mường Phăng, hoa thường bung nở rực rỡ vào giai đoạn cuối đông đầu xuân (tháng 1 hằng năm), tạo nên một biểu tượng giao lưu văn hóa và là điểm nhấn cảnh quan sinh thái đặc sắc thu hút khách du lịch của tỉnh Điện Biên.",
+        "lat": 21.431738,
+        "lng": 103.115187
+      }
+    ]
+  },
+  {
+    "id": "area_1778678966206",
+    "name": "Xã Sín Thầu",
+    "lat": 22.37627,
+    "lng": 102.254519,
+    "zoom": 12,
+    "items": [
+      {
+        "type": "scenery",
+        "name": "A Pa Chải",
+        "desc": "Điểm cực Tây trên đất liền thiêng liêng của Tổ quốc Việt Nam, nằm ở độ cao hơn 1.800m so với mực nước biển. Nơi đây sở hữu cột mốc 0 chủ quyền ba mặt đặc biệt làm bằng đá hoa cương, phân định ranh giới giữa ba quốc gia láng giềng sát vách.",
+        "mediaList": [
+          {
+            "url": "https://file3.qdnd.vn/data/images/0/2022/10/29/vuhuyen/a-pa-chai.jpg?dpi=150&quality=100&w=870",
+            "type": "image"
+          },
+          {
+            "url": "https://bcp.cdnchinhphu.vn/334894974524682240/2025/5/7/cot-co-1746592743831481522756.png",
+            "type": "image"
+          },
+          {
+            "url": "https://nemtv.vn/wp-content/uploads/2019/02/a-pa-chai-nemtv-08.jpg",
+            "type": "image"
+          }
+        ],
+        "q": "Hình ảnh dân gian độc đáo nào sau đây thường được sử dụng để mô tả về vị trí ranh giới đặc biệt của cột mốc số 0 tại A Pa Chải?",
+        "ans": [
+          "Một tiếng gà gáy ba nước cùng nghe",
+          "Một tiếng ngựa hí ba nước cùng nghe",
+          "Một ngọn khói lên ba nước cùng thấy",
+          "Một tiếng chiêng ngân ba nước cùng vang"
+        ],
+        "ex": "Cột mốc số 0 tại A Pa Chải là giao điểm biên giới quốc gia đặc biệt giữa ba nước Việt Nam - Lào - Trung Quốc. Hình ảnh ví von dân gian \"Một con gà gáy cả ba nước cùng nghe\" phản ánh sinh động tọa độ địa lý giáp ranh cực kỳ gần gũi của ba quốc gia tại điểm cực Tây này. Cột mốc được thiết kế hình trụ tam giác cao 2 mét, mỗi mặt hướng về một nước, khắc chìm quốc huy và tên nước bằng chữ bản địa, là biểu tượng thiêng liêng của chủ quyền biên giới.",
+        "lat": 22.400624,
+        "lng": 102.143927
+      }
+    ]
+  }
+]
